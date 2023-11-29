@@ -9,3 +9,11 @@ export const getAllMonths = async (req: Request, res: Response) => {
 export const createMonth = async (req: Request, res: Response) => {
   service.createMonth(req, res);
 };
+
+export const updateMonth = async (req: Request, res: Response) => {
+  service.updateMonth(req, res);
+};
+
+export const deleteMonth = async (req: Request, res: Response) => {
+  service.deleteMonth(req, res);
+};
