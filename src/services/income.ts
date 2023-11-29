@@ -140,11 +140,11 @@ export const deleteIncome = async (req: Request, res: Response) => {
     }
 
     const userId = getUserId(req);
-    const month = await db.income.delete({
+    const income = await db.income.delete({
       where: { id: Number(id), month: { userId }}
     });
 
-    return res.json(month);
+    return res.json(income);
   } catch (err) {
     return res.status(500).json({
       message: 'Error while deleting income.',

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 
 import { getAllAccessTokens } from './src/controllers/accessToken';
-import { getAllBudgets } from './src/controllers/budget';
+import { createBudget, deleteBudget, getAllBudgets, updateBudget } from './src/controllers/budget';
 import { getAllCategories } from './src/controllers/category';
 import { getAllExpenses } from './src/controllers/expense';
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from './src/controllers/income';
@@ -42,6 +42,9 @@ app.get('/auth/verify', auth.verify);
 
 // Budget routes
 app.get('/budget', auth.mustBeAuthenticated, getAllBudgets);
+app.post('/budget', auth.mustBeAuthenticated, createBudget);
+app.put('/budget/:id', auth.mustBeAuthenticated, updateBudget);
+app.delete('/budget/:id', auth.mustBeAuthenticated, deleteBudget);
 
 // Expense routes
 app.get('/expense', auth.mustBeAuthenticated, getAllExpenses);
