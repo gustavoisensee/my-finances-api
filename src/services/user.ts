@@ -148,7 +148,17 @@ export const deleteUser = async (req: Request, res: Response) => {
     }
 
     const user = await db.user.delete({
-      where: { id: Number(id) }
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        email: true,
+        password: false,
+        createdAt: true,
+        genderId: true
+      }
     });
 
     return res.json(user);

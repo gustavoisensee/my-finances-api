@@ -80,7 +80,6 @@ export const updateIncome = async (req: Request, res: Response) => {
 
     const {
       value,
-      createdAt,
       monthId
     } = req.body;
 
