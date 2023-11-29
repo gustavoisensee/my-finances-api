@@ -5,7 +5,7 @@ import { getAllAccessTokens } from './src/controllers/accessToken';
 import { getAllBudgets } from './src/controllers/budget';
 import { getAllCategories } from './src/controllers/category';
 import { getAllExpenses } from './src/controllers/expense';
-import { getAllIncomes } from './src/controllers/income';
+import { createIncome, deleteIncome, getAllIncomes, updateIncome } from './src/controllers/income';
 import { createMonth, updateMonth, getAllMonths, deleteMonth } from './src/controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from './src/controllers/user';
 import { getAllYears } from './src/controllers/year';
@@ -48,6 +48,9 @@ app.get('/expense', auth.mustBeAuthenticated, getAllExpenses);
 
 // Income routes
 app.get('/income', auth.mustBeAuthenticated, getAllIncomes);
+app.post('/income', auth.mustBeAuthenticated, createIncome);
+app.put('/income/:id', auth.mustBeAuthenticated, updateIncome);
+app.delete('/income/:id', auth.mustBeAuthenticated, deleteIncome);
 
 // Month routes
 app.get('/month', auth.mustBeAuthenticated, getAllMonths);

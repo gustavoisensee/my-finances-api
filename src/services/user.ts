@@ -47,6 +47,16 @@ export const createUser = async (req: Request, res: Response) => {
     const hash = await bcrypt.hash(password, 10);
 
     const user = await db.user.create({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        email: true,
+        password: false,
+        createdAt: true,
+        genderId: true
+      },
       data: {
         firstName,
         lastName,
@@ -110,7 +120,6 @@ export const updateUser = async (req: Request, res: Response) => {
         lastName,
         dateOfBirth,
         email,
-        createdAt,
         genderId
       }
     });

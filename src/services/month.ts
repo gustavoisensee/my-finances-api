@@ -91,7 +91,6 @@ export const updateMonth = async (req: Request, res: Response) => {
         ...oldData,
         value,
         notes,
-        createdAt,
         yearId,
         userId
       }
