@@ -13,3 +13,7 @@ export const createUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   await service.updateUser(req, res);
 };
+
+export const deleteUser = async (req: Request, res: Response) => {
+  await service.deleteUser(req, res);
+};

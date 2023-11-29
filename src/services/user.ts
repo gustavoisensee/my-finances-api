@@ -67,7 +67,6 @@ export const createUser = async (req: Request, res: Response) => {
   }
 }
 
-
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -120,6 +119,33 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(500).json({
       message: 'Error while updating user.',
+      err
+    });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(500).json({
+        message: 'Id is required.'
+      });
+    }
+    if (Number(id) === 1) {
+      return res.status(500).json({
+        message: 'Admin can not be deleted.'
+      });
+    }
+
+    const user = await db.user.delete({
+      where: { id: Number(id) }
+    });
+
+    return res.json(user);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while deleting user.',
       err
     });
   }
