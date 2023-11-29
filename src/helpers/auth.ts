@@ -1,10 +1,16 @@
 import { Request } from 'express';
+import jwt from 'jsonwebtoken';
 
-import { DEFAULT_TEMP_USER } from '../services/db';
+import { Verified } from '../types';
 
 export const getUserId = (req: Request) => {
-  // TODO implement jwt decode and get user id from token
-  // const authorization = req.headers?.['Authorization'] || '';
+  try {
+    const { authorization } = req.headers || {};
+    
+    const verified = jwt.verify(authorization || '', process.env.JWT_TOKEN as string) as Verified
 
-  return DEFAULT_TEMP_USER;
+    return verified?.userId || 0;
+  } catch {
+    return 0;
+  }
 }
