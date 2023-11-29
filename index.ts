@@ -6,7 +6,7 @@ import { getAllBudgets } from './src/controllers/budget';
 import { getAllCategories } from './src/controllers/category';
 import { getAllExpenses } from './src/controllers/expense';
 import { getAllIncomes } from './src/controllers/income';
-import { getAllMonths } from './src/controllers/month';
+import { createMonth, getAllMonths } from './src/controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from './src/controllers/user';
 import { getAllYears } from './src/controllers/year';
 import * as auth from './src/controllers/auth';
@@ -51,6 +51,7 @@ app.get('/income', auth.mustBeAuthenticated, getAllIncomes);
 
 // Month routes
 app.get('/month', auth.mustBeAuthenticated, getAllMonths);
+app.post('/month', auth.mustBeAuthenticated, createMonth);
 
 
 // --- Not Authenticated routes -----------

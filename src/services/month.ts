@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { getQueryTake } from '../helpers/query';
 import { getUserId } from '../helpers/auth';
@@ -19,3 +19,56 @@ export const getAllMonths = async (req: Request) => {
     return [];
   }
 };
+
+export const createMonth = async (req: Request, res: Response) => {
+  try {
+    const msgNumberMustBe = 'Value must be a number between 1 and 12.';
+    const userId = getUserId(req);
+
+    const {
+      value,
+      notes,
+      createdAt,
+      yearId,
+    } = req.body;
+
+    if (!Number.isInteger(value)) {
+      return res.status(500).json({
+        message: msgNumberMustBe
+      });
+    }
+    if (Number(value) > 12 || Number(value) < 1) {
+      return res.status(500).json({
+        message: msgNumberMustBe
+      });
+    }
+
+    const month = await db.month.create({
+      data: {
+        value,
+        notes,
+        createdAt,
+        yearId,
+        userId
+      }
+    });
+
+    return res.json(month);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while creating month.',
+      err
+    });
+  }
+};
+
+/**
+  id,
+  value,
+  notes,
+  createdAt,
+  yearId,
+  userId,
+  year,
+  user
+ */
