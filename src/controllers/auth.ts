@@ -4,11 +4,11 @@ import jwt from 'jsonwebtoken';
 import * as service from '../services/auth';
 
 export const authenticate = async (req: Request, res: Response) => {
-  res.json(await service.authenticate(req));
+  await service.authenticate(req, res);
 };
 
 export const verify = (req: Request, res: Response) => {
-  res.json(service.verify(req));
+  service.verify(req, res);
 };
 
 export const mustBeAuthenticated = (req: Request, res: Response, next: NextFunction) => {

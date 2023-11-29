@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import * as service from '../services/income';
 
 export const getAllIncomes = async (req: Request, res: Response) => {
-  res.json(await service.getAllIncomes(req));
+  await service.getAllIncomes(req, res);
 };
 
 export const createIncome = async (req: Request, res: Response) => {

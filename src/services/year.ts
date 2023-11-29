@@ -1,16 +1,16 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { getQueryTake } from '../helpers/query';
 import db from './db';
 
-export const getAllYears = async (req: Request) => {
+export const getAllYears = async (req: Request, res: Response) => {
   try {
     const years = await db.year.findMany({
       take: getQueryTake(req)
     });
 
-    return years;
+    return res.json(years);
   } catch {
-    return [];
+    return res.json([]);
   }
 };

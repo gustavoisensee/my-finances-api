@@ -1,10 +1,10 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { getQueryTake } from '../helpers/query';
 import db from './db';
 import { getUserId } from '../helpers/auth';
 
-export const getAllExpenses = async (req: Request) => {
+export const getAllExpenses = async (req: Request, res: Response) => {
   try {
     const userId = getUserId(req);
     const budgets = await db.expense.findMany({
@@ -18,8 +18,8 @@ export const getAllExpenses = async (req: Request) => {
       }
     });
 
-    return budgets;
+    return res.json(budgets);
   } catch {
-    return [];
+    return res.json([]);
   }
 };

@@ -7,7 +7,7 @@ import db from './db';
 const isMonthValid = (value: number) =>
   !Number.isInteger(value) || (Number(value) > 12 || Number(value) < 1)
 
-export const getAllMonths = async (req: Request) => {
+export const getAllMonths = async (req: Request, res: Response) => {
   try {
     const userId = getUserId(req);
     const months = await db.month.findMany({
@@ -17,9 +17,9 @@ export const getAllMonths = async (req: Request) => {
       }
     });
 
-    return months;
+    return res.json(months);
   } catch {
-    return [];
+    return res.json([]);
   }
 };
 

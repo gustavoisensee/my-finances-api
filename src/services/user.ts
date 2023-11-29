@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { getQueryTake } from '../helpers/query';
 import db from './db';
 
-export const getAllUsers = async (req: Request) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await db.user.findMany({
       take: getQueryTake(req),
@@ -20,9 +20,9 @@ export const getAllUsers = async (req: Request) => {
       }
     });
 
-    return users;
+    return res.json(users);
   } catch {
-    return [];
+    return res.json([]);
   }
 };
 

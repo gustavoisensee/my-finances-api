@@ -5,44 +5,44 @@ import bcrypt from 'bcrypt';
 import db from './db';
 import { Verified } from '../types';
 
-export const authenticate = async (req: Request): Promise<string> => {
+export const authenticate = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body || {};
-    if (!email || !password) return 'User or password not provided!';
+    if (!email || !password) return res.json('User or password not provided!');
 
     const user = await db.user.findUnique({
       where: {
         email
       }
     });
-    
-    if (!user) return 'Email is invalid!';
+
+    if (!user) return res.json('Email is invalid!');
 
     const result = await bcrypt.compare(password, user.password);
 
-    if (!result) return 'Password is invalid!';
+    if (!result) return res.json('Password is invalid!');
 
     const token = jwt.sign(
       { userId: user?.id },
       process.env.JWT_TOKEN as string
     );
 
-    return token;
+    return res.json(token);
   } catch {
-    return 'Something went wrong, try again!';
+    return res.json('Something went wrong, try again!');
   }
 };
 
-export const verify = (req: Request): string | jwt.JwtPayload => {
+export const verify = (req: Request, res: Response): string | jwt.JwtPayload => {
   try {
     const { authorization } = req.headers || {};
-    if (!authorization) return 'Token not provided!';
+    if (!authorization) return res.json('Token not provided!');
 
     const verified = jwt.verify(authorization, process.env.JWT_TOKEN as string);
 
-    return verified;
+    return res.json(verified);
   } catch (e) {
-    return 'Token is invalid!'
+    return res.json('Token is invalid!');
   }
 }
 

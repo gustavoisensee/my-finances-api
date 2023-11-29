@@ -4,7 +4,7 @@ import { getQueryTake } from '../helpers/query';
 import { getUserId } from '../helpers/auth';
 import db from './db';
 
-export const getAllIncomes = async (req: Request) => {
+export const getAllIncomes = async (req: Request, res: Response) => {
   try {
     const userId = getUserId(req);
     const incomes = await db.income.findMany({
@@ -16,9 +16,9 @@ export const getAllIncomes = async (req: Request) => {
       }
     });
 
-    return incomes;
+    return res.json(incomes);
   } catch {
-    return [];
+    return res.json([]);
   }
 };
 
