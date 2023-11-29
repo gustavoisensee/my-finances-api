@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 import db from './db';
 import { Verified } from '../types';
@@ -11,12 +12,15 @@ export const authenticate = async (req: Request): Promise<string> => {
 
     const user = await db.user.findUnique({
       where: {
-        email,
-        password
+        email
       }
     });
+    
+    if (!user) return 'Email is invalid!';
 
-    if (!user) return 'User or password invalid!'
+    const result = await bcrypt.compare(password, user.password);
+
+    if (!result) return 'Password is invalid!';
 
     const token = jwt.sign(
       { userId: user?.id },
