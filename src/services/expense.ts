@@ -23,3 +23,158 @@ export const getAllExpenses = async (req: Request, res: Response) => {
     return res.json([]);
   }
 };
+
+export const createExpense = async (req: Request, res: Response) => {
+  try {
+    const userId = getUserId(req);
+
+    const {
+      title,
+      value,
+      createdAt,
+      budgetId,
+      categoryId
+    } = req.body;
+
+    if (Number.isNaN(value) && Number(value) > 0) {
+      return res.status(500).json({
+        message: 'Value must be a number and greater than 0.'
+      });
+    }
+    if (title?.length < 3) {
+      return res.status(500).json({
+        message: 'Title must have at least 3 characters.'
+      });
+    }
+
+    const budget = await db.budget.findFirst({
+      where: {
+        id: Number(budgetId),
+        month: {
+          userId
+        }
+      }
+    });
+
+    if (!budget) {
+      return res.status(500).json({
+        message: 'Budget does not exist.'
+      });
+    }
+
+    const expense = await db.expense.create({
+      data: {
+        title,
+        value,
+        createdAt,
+        budgetId,
+        categoryId
+      }
+    });
+
+    return res.json(expense);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while creating expense.',
+      err
+    });
+  }
+};
+
+export const updateExpense = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(500).json({
+        message: 'Id is required.'
+      });
+    }
+    const userId = getUserId(req);
+
+    const {
+      title,
+      value,
+      budgetId,
+      categoryId
+    } = req.body;
+
+    if (Number.isNaN(value) && Number(value) > 0) {
+      return res.status(500).json({
+        message: 'Value must be a number and greater than 0.'
+      });
+    }
+    if (title?.length < 3) {
+      return res.status(500).json({
+        message: 'Title must have at least 3 characters.'
+      });
+    }
+
+    const budget = await db.budget.findFirst({
+      where: {
+        id: Number(budgetId),
+        month: {
+          userId
+        }
+      }
+    });
+
+    if (!budget) {
+      return res.status(500).json({
+        message: 'Budget does not exist.'
+      });
+    }
+
+    const oldData = await db.expense.findFirst({
+      where: {
+        id: Number(id)
+      }
+    })
+    const expense = await db.expense.update({
+      where: {
+        id: Number(id),
+        budget: {
+          month: {
+            userId
+          }
+        }
+      },
+      data: {
+        ...oldData,
+        title,
+        value,
+        budgetId,
+        categoryId
+      }
+    });
+
+    return res.json(expense);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while updating expense.',
+      err
+    });
+  }
+};
+
+export const deleteExpense = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(500).json({
+        message: 'Id is required.'
+      });
+    }
+
+    const userId = getUserId(req);
+    const expense = await db.expense.delete({
+      where: { id: Number(id), budget: { month: { userId } } }
+    });
+
+    return res.json(expense);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while deleting expense.',
+      err
+    });
+  }
+}
