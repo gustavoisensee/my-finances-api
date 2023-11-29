@@ -7,7 +7,7 @@ import { getAllCategories } from './src/controllers/category';
 import { getAllExpenses } from './src/controllers/expense';
 import { getAllIncomes } from './src/controllers/income';
 import { getAllMonths } from './src/controllers/month';
-import { createUser, getAllUsers } from './src/controllers/user';
+import { createUser, getAllUsers, updateUser } from './src/controllers/user';
 import { getAllYears } from './src/controllers/year';
 import * as auth from './src/controllers/auth';
 
@@ -31,6 +31,7 @@ app.get('/access-token', auth.mustBeAuthenticatedAdmin, getAllAccessTokens);
 // User routes
 app.get('/user', auth.mustBeAuthenticatedAdmin, getAllUsers);
 app.post('/user', auth.mustBeAuthenticatedAdmin, createUser);
+app.put('/user/:id', auth.mustBeAuthenticatedAdmin, updateUser);
 
 
 // --- Authenticated routes --------------

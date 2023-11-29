@@ -9,3 +9,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
   await service.createUser(req, res);
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  await service.updateUser(req, res);
+};

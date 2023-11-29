@@ -7,7 +7,17 @@ import db from './db';
 export const getAllUsers = async (req: Request) => {
   try {
     const users = await db.user.findMany({
-      take: getQueryTake(req)
+      take: getQueryTake(req),
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        email: true,
+        password: false,
+        createdAt: true,
+        genderId: true
+      }
     });
 
     return users;
@@ -52,6 +62,64 @@ export const createUser = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(500).json({
       message: 'Error while creating user.',
+      err
+    });
+  }
+}
+
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(500).json({
+        message: 'Id is required.'
+      });
+    }
+
+    const {
+      firstName,
+      lastName,
+      dateOfBirth,
+      email,
+      createdAt,
+      genderId
+    } = req.body;
+
+    if (!email) {
+      return res.status(500).json({
+        message: 'Email is required.'
+      });
+    }
+
+    const oldData = await db.user.findFirst({ where: { id: Number(id) }});
+    const user = await db.user.update({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        email: true,
+        password: false,
+        createdAt: true,
+        genderId: true
+      },
+      data: {
+        ...oldData,
+        firstName,
+        lastName,
+        dateOfBirth,
+        email,
+        createdAt,
+        genderId
+      }
+    });
+
+    return res.json(user);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while updating user.',
       err
     });
   }
