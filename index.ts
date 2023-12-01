@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 
 import { getAllAccessTokens } from './src/controllers/accessToken';
 import { createBudget, deleteBudget, getAllBudgets, updateBudget } from './src/controllers/budget';
@@ -12,8 +13,11 @@ import { getAllYears } from './src/controllers/year';
 import * as auth from './src/controllers/auth';
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
+app.use(cors({
+  origin: ['http://localhost:3000']
+}));
 app.use(express.json());
 
 app.get('/', (req: any, res: any) => {

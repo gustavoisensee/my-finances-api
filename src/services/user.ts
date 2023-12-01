@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 
 import { getQueryTake } from '../helpers/query';
-import db from './db';
+import db, { DEFAULT_ADMIN_USER_ID } from './db';
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -141,7 +141,7 @@ export const deleteUser = async (req: Request, res: Response) => {
         message: 'Id is required.'
       });
     }
-    if (Number(id) === 1) {
+    if (Number(id) === DEFAULT_ADMIN_USER_ID) {
       return res.status(500).json({
         message: 'Admin can not be deleted.'
       });

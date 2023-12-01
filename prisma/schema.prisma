@@ -31,6 +31,8 @@ model Category {
   name          String
   createdAt     DateTime
   expenses      Expense[]
+  userId        Int?
+  user          User?     @relation(fields: [userId], references: [id])
 }
 
 model Gender {
@@ -50,6 +52,7 @@ model User {
   genderId      Int
   gender        Gender    @relation(fields: [genderId], references: [id])
   months        Month[]
+  categories    Category[]
 }
 
 model Month {

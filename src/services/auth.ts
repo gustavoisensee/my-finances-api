@@ -2,13 +2,13 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-import db from './db';
+import db, { DEFAULT_ADMIN_USER_ID } from './db';
 import { Verified } from '../types';
 
 export const authenticate = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body || {};
-    if (!email || !password) return res.json('User or password not provided!');
+    if (!email || !password) return res.status(500).json('User or password not provided!');
 
     const user = await db.user.findUnique({
       where: {
@@ -16,20 +16,20 @@ export const authenticate = async (req: Request, res: Response) => {
       }
     });
 
-    if (!user) return res.json('Email is invalid!');
+    if (!user) return res.status(500).json('Email is invalid!');
 
     const result = await bcrypt.compare(password, user.password);
 
-    if (!result) return res.json('Password is invalid!');
+    if (!result) return res.status(500).json('Password is invalid!');
 
     const token = jwt.sign(
       { userId: user?.id },
       process.env.JWT_TOKEN as string
     );
 
-    return res.json(token);
+    return res.json({ token, userId: user.id, userName: user.firstName });
   } catch {
-    return res.json('Something went wrong, try again!');
+    return res.status(500).json('Something went wrong, try again!');
   }
 };
 
@@ -70,7 +70,7 @@ export const mustBeAuthenticated = (req: Request, res: Response, next: NextFunct
   isAuthenticated(req, res, next, isAuth);
 };
 
-const isAuthAdmin = (verified: Verified) => verified?.userId === 1;
+const isAuthAdmin = (verified: Verified) => verified?.userId === DEFAULT_ADMIN_USER_ID;
 export const mustBeAuthenticatedAdmin = (req: Request, res: Response, next: NextFunction) => {
   isAuthenticated(req, res, next, isAuthAdmin);
 }
