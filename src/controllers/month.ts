@@ -6,6 +6,10 @@ export const getAllMonths = async (req: Request, res: Response) => {
   await service.getAllMonths(req, res);
 };
 
+export const getMonthById = async (req: Request, res: Response) => {
+  await service.getMonthById(req, res);
+};
+
 export const createMonth = async (req: Request, res: Response) => {
   service.createMonth(req, res);
 };

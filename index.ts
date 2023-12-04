@@ -7,7 +7,7 @@ import { createBudget, deleteBudget, getAllBudgets, updateBudget } from './src/c
 import { getAllCategories } from './src/controllers/category';
 import { createExpense, deleteExpense, getAllExpenses, updateExpense } from './src/controllers/expense';
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from './src/controllers/income';
-import { createMonth, updateMonth, getAllMonths, deleteMonth } from './src/controllers/month';
+import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById } from './src/controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from './src/controllers/user';
 import { getAllYears } from './src/controllers/year';
 import * as auth from './src/controllers/auth';
@@ -64,6 +64,7 @@ app.delete('/income/:id', auth.mustBeAuthenticated, deleteIncome);
 
 // Month routes
 app.get('/month', auth.mustBeAuthenticated, getAllMonths);
+app.get('/month/:id', auth.mustBeAuthenticated, getMonthById);
 app.post('/month', auth.mustBeAuthenticated, createMonth);
 app.put('/month/:id', auth.mustBeAuthenticated, updateMonth);
 app.delete('/month/:id', auth.mustBeAuthenticated, deleteMonth);

@@ -24,6 +24,7 @@
   },
   "scripts": {
     "dev": "nodemon index.ts",
-    "start": "node ./dist/index.js"
+    "start": "node ./dist/index.js",
+    "studio": "prisma studio"
   }
 }

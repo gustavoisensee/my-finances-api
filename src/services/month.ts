@@ -7,13 +7,73 @@ import db from './db';
 const isMonthValid = (value: number) =>
   !Number.isInteger(value) || (Number(value) > 12 || Number(value) < 1)
 
+// i = include
+type Params = {
+  iIncomes?: string;
+  iBudgets?: string;
+  iExpenses?: string;
+}
+
+const isValid = (bool: string) => bool?.toLowerCase() === 'true';
+
 export const getAllMonths = async (req: Request, res: Response) => {
   try {
+    const {
+      iIncomes = 'false',
+      iBudgets = 'false',
+      iExpenses = 'false',
+    }: Params = req.query;
+
     const userId = getUserId(req);
     const months = await db.month.findMany({
       take: getQueryTake(req),
+      include: {
+        incomes: isValid(iIncomes),
+        budgets: isValid(iBudgets) ?? {
+          include: {
+            expenses: isValid(iExpenses)
+          }
+        }
+      },
       where: {
         userId
+      }
+    });
+
+    return res.json(months);
+  } catch {
+    return res.json([]);
+  }
+};
+
+export const getMonthById = async (req: Request, res: Response) => {
+  try {
+    const {
+      iIncomes = 'false',
+      iBudgets = 'false',
+      iExpenses = 'false',
+    }: Params = req.query;
+
+    const { id } = req.params;
+    if (!id) {
+      return res.status(500).json({
+        message: 'Id is required.'
+      });
+    }
+
+    const userId = getUserId(req);
+    const months = await db.month.findFirst({
+      include: {
+        incomes: isValid(iIncomes),
+        budgets: isValid(iBudgets) ?? {
+          include: {
+            expenses: isValid(iExpenses)
+          }
+        }
+      },
+      where: {
+        userId,
+        id: Number(id)
       }
     });
 
@@ -84,7 +144,7 @@ export const updateMonth = async (req: Request, res: Response) => {
       });
     }
 
-    const oldData = await db.month.findFirst({ where: { id: Number(id) }});
+    const oldData = await db.month.findFirst({ where: { id: Number(id) } });
     const month = await db.month.update({
       where: { id: Number(id), userId },
       data: {
