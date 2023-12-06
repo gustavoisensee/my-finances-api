@@ -35,11 +35,11 @@ export const getAllMonths = async (req: Request, res: Response) => {
       take: getQueryTake(req),
       include: {
         incomes: isValid(iIncomes),
-        budgets: isValid(iBudgets) ?? {
+        budgets: isValid(iBudgets) ? {
           include: {
             expenses: isValid(iExpenses)
           }
-        }
+        } : false
       },
       where: {
         userId,
@@ -72,11 +72,11 @@ export const getMonthById = async (req: Request, res: Response) => {
     const months = await db.month.findFirst({
       include: {
         incomes: isValid(iIncomes),
-        budgets: isValid(iBudgets) ?? {
+        budgets: isValid(iBudgets) ? {
           include: {
             expenses: isValid(iExpenses)
           }
-        }
+        } : false
       },
       where: {
         userId,
