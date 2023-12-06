@@ -16,7 +16,7 @@ export const initMiddleware = (app: Express) => {
     origin: ['http://localhost:3000']
   }));
   app.use(express.json());
-}
+};
 
 export const initAuthenticationRoutes = (app: Express) => {
   app.get('/', (req: Request, res: Response) => {
@@ -24,17 +24,12 @@ export const initAuthenticationRoutes = (app: Express) => {
   });
   app.post('/auth', authenticate);
   app.get('/auth/verify', verify);
-}
+};
 
 export const initNotAuthenticatedRoutes = (app: Express) => {
   app.get('/year', getAllYears);
   app.get('/category', getAllCategories);
-
-  // Not supported routes
-  app.use('/*', (req, res) => {
-    res.send('Not Found');
-  })
-}
+};
 
 export const initAuthenticatedRoutes = (app: Express) => {
   // -- Authenticates ALL endpoints below this line.
@@ -76,4 +71,11 @@ export const initAuthenticatedRoutes = (app: Express) => {
   app.post('/user', mustBeAuthenticatedAdmin, createUser);
   app.put('/user/:id', mustBeAuthenticatedAdmin, updateUser);
   app.delete('/user/:id', mustBeAuthenticatedAdmin, deleteUser);
-}
+};
+
+export const initOtherRoutes = (app: Express) => {
+  // Not supported routes
+  app.use('/*', (req, res) => {
+    res.send('Not Found');
+  })
+};

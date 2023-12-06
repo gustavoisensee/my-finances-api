@@ -12,6 +12,7 @@ type Params = {
   iIncomes?: string;
   iBudgets?: string;
   iExpenses?: string;
+  yearId?: number;
 }
 
 const isValid = (bool: string) => bool?.toLowerCase() === 'true';
@@ -22,7 +23,12 @@ export const getAllMonths = async (req: Request, res: Response) => {
       iIncomes = 'false',
       iBudgets = 'false',
       iExpenses = 'false',
+      yearId
     }: Params = req.query;
+
+    if (!yearId) {
+      return res.status(500).json('yearId must be passed!');
+    }
 
     const userId = getUserId(req);
     const months = await db.month.findMany({
@@ -36,7 +42,8 @@ export const getAllMonths = async (req: Request, res: Response) => {
         }
       },
       where: {
-        userId
+        userId,
+        yearId: Number(yearId)
       }
     });
 
