@@ -9,6 +9,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.8.10",
     "nodemon": "^3.0.1",
+    "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
@@ -24,6 +25,7 @@
   },
   "scripts": {
     "dev": "nodemon index.ts",
+    "build": "rimraf -rf dist/ && tsc",
     "start": "node ./dist/index.js",
     "studio": "prisma studio"
   }
