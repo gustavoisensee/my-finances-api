@@ -25,7 +25,7 @@
   },
   "scripts": {
     "dev": "nodemon index.ts",
-    "build": "yarn && rimraf -rf dist/ && tsc",
+    "build": "pnpm && rimraf -rf dist/ && tsc",
     "start": "node ./dist/index.js",
     "studio": "prisma studio"
   }
