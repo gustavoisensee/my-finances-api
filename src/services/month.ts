@@ -97,7 +97,7 @@ export const createMonth = async (req: Request, res: Response) => {
 
     const {
       value,
-      notes,
+      description,
       createdAt,
       yearId,
     } = req.body;
@@ -111,7 +111,7 @@ export const createMonth = async (req: Request, res: Response) => {
     const month = await db.month.create({
       data: {
         value,
-        notes,
+        description,
         createdAt,
         yearId,
         userId
@@ -140,8 +140,7 @@ export const updateMonth = async (req: Request, res: Response) => {
 
     const {
       value,
-      notes,
-      createdAt,
+      description,
       yearId,
     } = req.body;
 
@@ -157,7 +156,7 @@ export const updateMonth = async (req: Request, res: Response) => {
       data: {
         ...oldData,
         value,
-        notes,
+        description,
         yearId,
         userId
       }

@@ -10,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model AccessToken {
   id              Int       @id @default(autoincrement())
   name            String
@@ -58,7 +57,7 @@ model User {
 model Month {
   id            Int       @id @default(autoincrement())
   value         Int
-  notes         String
+  description   String
   createdAt     DateTime
   yearId        Int
   userId        Int
@@ -70,6 +69,7 @@ model Month {
 
 model Income {
   id            Int       @id @default(autoincrement())
+  description   String?
   value         Float
   createdAt     DateTime
   monthId       Int
@@ -78,7 +78,7 @@ model Income {
 
 model Budget {
   id            Int       @id @default(autoincrement())
-  name          String
+  description   String
   value         Float
   createdAt     DateTime
   monthId       Int
@@ -88,7 +88,7 @@ model Budget {
 
 model Expense {
   id            Int       @id @default(autoincrement())
-  title         String
+  description   String
   value         Float
   createdAt     DateTime
   budgetId      Int

@@ -27,7 +27,7 @@ export const createBudget = async (req: Request, res: Response) => {
     const userId = getUserId(req);
 
     const {
-      name,
+      description,
       value,
       createdAt,
       monthId
@@ -38,7 +38,7 @@ export const createBudget = async (req: Request, res: Response) => {
         message: 'Value must be a number and greater than 0.'
       });
     }
-    if (name?.length < 3) {
+    if (description?.length < 3) {
       return res.status(500).json({
         message: 'Name must have at least 3 characters.'
       });
@@ -59,7 +59,7 @@ export const createBudget = async (req: Request, res: Response) => {
 
     const budget = await db.budget.create({
       data: {
-        name,
+        description,
         value,
         createdAt,
         monthId
@@ -87,7 +87,7 @@ export const updateBudget = async (req: Request, res: Response) => {
     const userId = getUserId(req);
 
     const {
-      name,
+      description,
       value,
       monthId
     } = req.body;
@@ -97,7 +97,7 @@ export const updateBudget = async (req: Request, res: Response) => {
         message: 'Value must be a number and greater than 0.'
       });
     }
-    if (name?.length < 3) {
+    if (description?.length < 3) {
       return res.status(500).json({
         message: 'Name must have at least 3 characters.'
       });
@@ -130,7 +130,7 @@ export const updateBudget = async (req: Request, res: Response) => {
       },
       data: {
         ...oldData,
-        name,
+        description,
         value,
         monthId
       }

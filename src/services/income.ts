@@ -28,6 +28,7 @@ export const createIncome = async (req: Request, res: Response) => {
 
     const {
       value,
+      description,
       createdAt,
       monthId
     } = req.body;
@@ -54,6 +55,7 @@ export const createIncome = async (req: Request, res: Response) => {
     const income = await db.income.create({
       data: {
         value,
+        description,
         createdAt,
         monthId
       }
@@ -80,6 +82,7 @@ export const updateIncome = async (req: Request, res: Response) => {
 
     const {
       value,
+      description,
       monthId
     } = req.body;
 
@@ -117,6 +120,7 @@ export const updateIncome = async (req: Request, res: Response) => {
       data: {
         ...oldData,
         value,
+        description,
         monthId
       }
     });

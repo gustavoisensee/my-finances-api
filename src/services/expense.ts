@@ -29,8 +29,8 @@ export const createExpense = async (req: Request, res: Response) => {
     const userId = getUserId(req);
 
     const {
-      title,
       value,
+      description,
       createdAt,
       budgetId,
       categoryId
@@ -41,7 +41,7 @@ export const createExpense = async (req: Request, res: Response) => {
         message: 'Value must be a number and greater than 0.'
       });
     }
-    if (title?.length < 3) {
+    if (description?.length < 3) {
       return res.status(500).json({
         message: 'Title must have at least 3 characters.'
       });
@@ -64,8 +64,8 @@ export const createExpense = async (req: Request, res: Response) => {
 
     const expense = await db.expense.create({
       data: {
-        title,
         value,
+        description,
         createdAt,
         budgetId,
         categoryId
@@ -92,8 +92,8 @@ export const updateExpense = async (req: Request, res: Response) => {
     const userId = getUserId(req);
 
     const {
-      title,
       value,
+      description,
       budgetId,
       categoryId
     } = req.body;
@@ -103,7 +103,7 @@ export const updateExpense = async (req: Request, res: Response) => {
         message: 'Value must be a number and greater than 0.'
       });
     }
-    if (title?.length < 3) {
+    if (description?.length < 3) {
       return res.status(500).json({
         message: 'Title must have at least 3 characters.'
       });
@@ -140,8 +140,8 @@ export const updateExpense = async (req: Request, res: Response) => {
       },
       data: {
         ...oldData,
-        title,
         value,
+        description,
         budgetId,
         categoryId
       }
