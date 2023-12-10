@@ -13,7 +13,10 @@ import { getAllYears } from '../controllers/year';
 
 export const initMiddleware = (app: Express) => {
   app.use(cors({
-    origin: ['http://localhost:3000']
+    origin: [
+      'http://localhost:3000',
+      'https://mf-v4.gustavoisensee.io'
+    ]
   }));
   app.use(express.json());
 };
