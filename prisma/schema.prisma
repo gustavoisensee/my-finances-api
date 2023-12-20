@@ -73,7 +73,7 @@ model Income {
   value         Float
   createdAt     DateTime
   monthId       Int
-  month         Month     @relation(fields: [monthId], references: [id])
+  month         Month     @relation(fields: [monthId], references: [id], onDelete: Cascade)
 }
 
 model Budget {
@@ -82,7 +82,7 @@ model Budget {
   value         Float
   createdAt     DateTime
   monthId       Int
-  month         Month     @relation(fields: [monthId], references: [id])
+  month         Month     @relation(fields: [monthId], references: [id], onDelete: Cascade)
   expenses      Expense[]
 }
 
@@ -94,5 +94,5 @@ model Expense {
   budgetId      Int
   categoryId    Int
   category      Category  @relation(fields: [categoryId], references: [id])
-  budget        Budget    @relation(fields: [budgetId], references: [id])
+  budget        Budget    @relation(fields: [budgetId], references: [id], onDelete: Cascade)
 }
