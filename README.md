@@ -1,4 +1,4 @@
-## My-finances-api-v3 ##
+## My-finances-api ##
 
 Restful api for my-finances-web
 
