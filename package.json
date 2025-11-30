@@ -26,8 +26,9 @@
   },
   "scripts": {
     "dev": "nodemon --exec tsx index.ts",
-    "build": "pnpm i && rimraf dist/ && tsc",
+    "build": "pnpm i && prisma generate && rimraf dist/ && tsc",
     "start": "node ./dist/index.js",
+    "postinstall": "prisma generate",
     "studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
