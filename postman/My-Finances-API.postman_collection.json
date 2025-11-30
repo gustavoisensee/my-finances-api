@@ -1,0 +1,919 @@
+{
+	"info": {
+		"_postman_id": "my-finances-api-collection",
+		"name": "My Finances API",
+		"description": "Complete API collection for My Finances API with sample requests and responses.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set(\"auth_token\", jsonData.token);",
+									"    pm.environment.set(\"user_id\", jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth"
+							]
+						},
+						"description": "Authenticate user and receive JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"verify"
+							]
+						},
+						"description": "Verify if the JWT token is valid"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for login and token verification"
+		},
+		{
+			"name": "Public",
+			"item": [
+				{
+					"name": "Get All Years",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/year?take=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"year"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "10",
+									"description": "Number of records to return (default: 10)"
+								}
+							]
+						},
+						"description": "Get all years (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/category?take=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"category"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "20",
+									"description": "Number of records to return (default: 10)"
+								}
+							]
+						},
+						"description": "Get all categories (public endpoint)"
+					},
+					"response": []
+				}
+			],
+			"description": "Public endpoints that don't require authentication"
+		},
+		{
+			"name": "Months",
+			"item": [
+				{
+					"name": "Get All Months",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/month?yearId=1&iIncomes=true&iBudgets=true&iExpenses=true&take=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"month"
+							],
+							"query": [
+								{
+									"key": "yearId",
+									"value": "1",
+									"description": "Year ID (required)"
+								},
+								{
+									"key": "iIncomes",
+									"value": "true",
+									"description": "Include incomes (true/false)"
+								},
+								{
+									"key": "iBudgets",
+									"value": "true",
+									"description": "Include budgets (true/false)"
+								},
+								{
+									"key": "iExpenses",
+									"value": "true",
+									"description": "Include expenses (true/false)"
+								},
+								{
+									"key": "take",
+									"value": "10",
+									"description": "Number of records to return"
+								}
+							]
+						},
+						"description": "Get all months for a specific year with optional includes"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Month By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/month/1?iIncomes=true&iBudgets=true&iExpenses=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"month",
+								"1"
+							],
+							"query": [
+								{
+									"key": "iIncomes",
+									"value": "true",
+									"description": "Include incomes (true/false)"
+								},
+								{
+									"key": "iBudgets",
+									"value": "true",
+									"description": "Include budgets (true/false)"
+								},
+								{
+									"key": "iExpenses",
+									"value": "true",
+									"description": "Include expenses (true/false)"
+								}
+							]
+						},
+						"description": "Get a specific month by ID with optional includes"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Month",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"value\": 1,\n  \"description\": \"January 2025\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"yearId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/month",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"month"
+							]
+						},
+						"description": "Create a new month (value must be 1-12)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Month",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"value\": 1,\n  \"description\": \"January 2025 - Updated\",\n  \"yearId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/month/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"month",
+								"1"
+							]
+						},
+						"description": "Update an existing month"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Month",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/month/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"month",
+								"1"
+							]
+						},
+						"description": "Delete a month (cascades to incomes and budgets)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing months (requires authentication)"
+		},
+		{
+			"name": "Budgets",
+			"item": [
+				{
+					"name": "Get All Budgets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/budget?take=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "10",
+									"description": "Number of records to return"
+								}
+							]
+						},
+						"description": "Get all budgets for the authenticated user"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Budget",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Groceries Budget\",\n  \"value\": 500.00,\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"monthId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/budget",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget"
+							]
+						},
+						"description": "Create a new budget (description min 3 chars, value > 0)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Budget",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Groceries Budget - Updated\",\n  \"value\": 600.00,\n  \"monthId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/budget/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"1"
+							]
+						},
+						"description": "Update an existing budget"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Budget",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/budget/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"1"
+							]
+						},
+						"description": "Delete a budget (cascades to expenses)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing budgets (requires authentication)"
+		},
+		{
+			"name": "Expenses",
+			"item": [
+				{
+					"name": "Get All Expenses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/expense?take=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"expense"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "20",
+									"description": "Number of records to return"
+								}
+							]
+						},
+						"description": "Get all expenses for the authenticated user"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Expense",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Supermarket Shopping\",\n  \"value\": 85.50,\n  \"createdAt\": \"2025-01-15T10:30:00.000Z\",\n  \"budgetId\": 1,\n  \"categoryId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/expense",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"expense"
+							]
+						},
+						"description": "Create a new expense (description min 3 chars, value > 0)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Expense",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Supermarket Shopping - Updated\",\n  \"value\": 92.75,\n  \"budgetId\": 1,\n  \"categoryId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/expense/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"expense",
+								"1"
+							]
+						},
+						"description": "Update an existing expense"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Expense",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/expense/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"expense",
+								"1"
+							]
+						},
+						"description": "Delete an expense"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing expenses (requires authentication)"
+		},
+		{
+			"name": "Incomes",
+			"item": [
+				{
+					"name": "Get All Incomes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/income?take=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"income"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "10",
+									"description": "Number of records to return"
+								}
+							]
+						},
+						"description": "Get all incomes for the authenticated user"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Income",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Monthly Salary\",\n  \"value\": 5000.00,\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"monthId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/income",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"income"
+							]
+						},
+						"description": "Create a new income (value > 0)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Income",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Monthly Salary + Bonus\",\n  \"value\": 5500.00,\n  \"monthId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/income/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"income",
+								"1"
+							]
+						},
+						"description": "Update an existing income"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Income",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/income/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"income",
+								"1"
+							]
+						},
+						"description": "Delete an income"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing incomes (requires authentication)"
+		},
+		{
+			"name": "Admin - Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text",
+								"description": "Admin user token required"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user?take=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "10",
+									"description": "Number of records to return"
+								}
+							]
+						},
+						"description": "Get all users (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text",
+								"description": "Admin user token required"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15T00:00:00.000Z\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"genderId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user"
+							]
+						},
+						"description": "Create a new user (admin only). Password will be hashed automatically."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text",
+								"description": "Admin user token required"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"dateOfBirth\": \"1990-05-15T00:00:00.000Z\",\n  \"email\": \"john.smith@example.com\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"genderId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"2"
+							]
+						},
+						"description": "Update an existing user (admin only). Cannot update password through this endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text",
+								"description": "Admin user token required"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user",
+								"2"
+							]
+						},
+						"description": "Delete a user (admin only). Cannot delete admin user (ID: 1)."
+					},
+					"response": []
+				}
+			],
+			"description": "Admin-only endpoints for managing users (requires admin authentication)"
+		},
+		{
+			"name": "Admin - Access Tokens",
+			"item": [
+				{
+					"name": "Get All Access Tokens",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text",
+								"description": "Admin user token required"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/access-token?take=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"access-token"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "10",
+									"description": "Number of records to return"
+								}
+							]
+						},
+						"description": "Get all access tokens (admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Admin-only endpoints for managing access tokens"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+

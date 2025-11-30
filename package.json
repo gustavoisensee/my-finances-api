@@ -1,32 +1,40 @@
 {
-  "name": "my-finances-api-v4",
+  "name": "my-finances-api",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/express": "^4.17.20",
-    "@types/jsonwebtoken": "^9.0.5",
-    "@types/node": "^20.8.10",
-    "nodemon": "^3.0.1",
-    "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.2",
+    "nodemon": "^3.1.7",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@prisma/client": "5.5.2",
+    "@prisma/client": "^6.19.0",
     "@types/cors": "^2.8.17",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.5.2"
+    "prisma": "^6.19.0"
   },
   "scripts": {
-    "dev": "nodemon index.ts",
-    "build": "pnpm i && rimraf -rf dist/ && tsc",
+    "dev": "nodemon --exec tsx index.ts",
+    "build": "pnpm i && rimraf dist/ && tsc",
     "start": "node ./dist/index.js",
-    "studio": "prisma studio"
-  }
+    "studio": "prisma studio",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:clean": "tsx prisma/clean.ts"
+  },
+  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
 }
