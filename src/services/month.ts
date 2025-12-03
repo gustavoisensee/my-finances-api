@@ -30,7 +30,7 @@ export const getAllMonths = async (req: Request, res: Response) => {
       return res.status(500).json('yearId must be passed!');
     }
 
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const months = await db.month.findMany({
       take: getQueryTake(req),
       include: {
@@ -68,7 +68,7 @@ export const getMonthById = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const months = await db.month.findFirst({
       include: {
         incomes: isValid(iIncomes),
@@ -93,7 +93,7 @@ export const getMonthById = async (req: Request, res: Response) => {
 export const createMonth = async (req: Request, res: Response) => {
   try {
     const msgNumberMustBe = 'Value must be a number between 1 and 12.';
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       value,
@@ -136,7 +136,7 @@ export const updateMonth = async (req: Request, res: Response) => {
       });
     }
     const msgNumberMustBe = 'Value must be a number between 1 and 12.';
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       value,
@@ -180,7 +180,7 @@ export const deleteMonth = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const month = await db.month.delete({
       where: { id: Number(id), userId }
     });

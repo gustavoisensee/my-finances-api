@@ -6,7 +6,7 @@ import db from './db';
 
 export const getAllBudgets = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const budgets = await db.budget.findMany({
       take: getQueryTake(req),
       where: {
@@ -24,7 +24,7 @@ export const getAllBudgets = async (req: Request, res: Response) => {
 
 export const createBudget = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       description,
@@ -84,7 +84,7 @@ export const updateBudget = async (req: Request, res: Response) => {
         message: 'Id is required.'
       });
     }
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       description,
@@ -154,7 +154,7 @@ export const deleteBudget = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const budget = await db.budget.delete({
       where: { id: Number(id), month: { userId }}
     });

@@ -6,7 +6,7 @@ import { getUserId } from '../helpers/auth';
 
 export const getAllExpenses = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const budgets = await db.expense.findMany({
       take: getQueryTake(req),
       where: {
@@ -26,7 +26,7 @@ export const getAllExpenses = async (req: Request, res: Response) => {
 
 export const createExpense = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       value,
@@ -89,7 +89,7 @@ export const updateExpense = async (req: Request, res: Response) => {
         message: 'Id is required.'
       });
     }
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       value,
@@ -165,7 +165,7 @@ export const deleteExpense = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const expense = await db.expense.delete({
       where: { id: Number(id), budget: { month: { userId } } }
     });

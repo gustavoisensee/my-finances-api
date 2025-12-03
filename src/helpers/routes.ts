@@ -8,7 +8,7 @@ import { createExpense, deleteExpense, getAllExpenses, updateExpense } from '../
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from '../controllers/income';
 import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById } from '../controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from '../controllers/user';
-import { authenticate, mustBeAuthenticated, mustBeAuthenticatedAdmin, verify } from '../controllers/auth';
+import { authenticate, mustBeAuthenticated, mustBeAuthenticatedAdmin, verify, syncClerkUser, handleClerkWebhook } from '../controllers/auth';
 import { getAllYears } from '../controllers/year';
 
 export const initMiddleware = (app: Express) => {
@@ -21,12 +21,29 @@ export const initMiddleware = (app: Express) => {
   app.use(express.json());
 };
 
+export const initWebhookRoutes = (app: Express) => {
+  // Webhook endpoint needs raw body for signature verification
+  // MUST be registered before express.json() middleware
+  // Note: CORS is not needed for webhooks (server-to-server), but we add it anyway
+  app.post('/webhooks/clerk', 
+    cors({
+      origin: '*', // Webhooks come from Clerk's servers
+      methods: ['POST']
+    }),
+    express.raw({ type: 'application/json' }), 
+    handleClerkWebhook
+  );
+};
+
 export const initAuthenticationRoutes = (app: Express) => {
   app.get('/', (req: Request, res: Response) => {
     res.send('Index');
   });
+  
+  // Auth endpoints
   app.post('/auth', authenticate);
   app.get('/auth/verify', verify);
+  app.post('/auth/sync', syncClerkUser); // Kept as fallback
 };
 
 export const initNotAuthenticatedRoutes = (app: Express) => {

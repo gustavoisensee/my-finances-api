@@ -6,7 +6,7 @@ import db, { DEFAULT_ADMIN_USER_ID } from './db';
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const budgets = await db.category.findMany({
       take: getQueryTake(req),

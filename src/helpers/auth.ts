@@ -1,15 +1,34 @@
 import { Request } from 'express';
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@clerk/backend';
+import db from '../services/db';
 
-import { Verified } from '../types';
-
-export const getUserId = (req: Request) => {
+export const getUserId = async (req: Request): Promise<number> => {
   try {
     const { authorization } = req.headers || {};
     
-    const verified = jwt.verify(authorization || '', process.env.JWT_TOKEN as string) as Verified
+    if (!authorization) return 0;
 
-    return verified?.userId || 0;
+    // Extract token (remove 'Bearer ' prefix if present and trim whitespace)
+    const token = authorization.startsWith('Bearer ') 
+      ? authorization.substring(7).trim() 
+      : authorization.trim();
+
+    // Verify Clerk session token
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY as string
+    });
+    
+    if (!payload || !payload.sub) return 0;
+
+    const clerkUserId = payload.sub;
+
+    // Look up user by clerkId to get internal userId
+    const user = await db.user.findFirst({
+      where: { clerkId: clerkUserId },
+      select: { id: true }
+    });
+
+    return user?.id || 0;
   } catch {
     return 0;
   }

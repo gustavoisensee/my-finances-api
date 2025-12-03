@@ -15,6 +15,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
+    "@clerk/backend": "^2.24.0",
     "@prisma/client": "^6.19.0",
     "@types/cors": "^2.8.17",
     "bcrypt": "^5.1.1",

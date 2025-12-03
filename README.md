@@ -4,7 +4,7 @@ A RESTful API for personal finance management built with Node.js, Express, TypeS
 
 ## 🚀 Features
 
-- **User Authentication**: JWT-based authentication with bcrypt password hashing
+- **User Authentication**: Clerk-based authentication for secure user management
 - **Financial Tracking**: 
   - Income management
   - Budget creation and tracking
@@ -44,7 +44,9 @@ A RESTful API for personal finance management built with Node.js, Express, TypeS
    Update the following variables:
    - `DATABASE_URL`: Your Supabase connection string (pooled)
    - `DIRECT_URL`: Your Supabase direct connection string
-   - `JWT_TOKEN`: A secure random string for JWT signing
+   - `CLERK_SECRET_KEY`: Your Clerk secret key from the Clerk Dashboard
+   - `CLERK_WEBHOOK_SECRET`: Your Clerk webhook signing secret (from Clerk Dashboard → Webhooks)
+   - `JWT_TOKEN`: A secure random string for JWT signing (legacy, kept for backwards compatibility)
    - `NODE_PORT`: Port for the server (default: 3001)
    - `ADMIN_EMAIL`: Email for the admin user (default: admin@myfinances.com)
    - `ADMIN_PASSWORD`: **Required** - Strong password for admin user
@@ -94,8 +96,10 @@ pnpm start      # Start the production server
 > See [postman/POSTMAN_GUIDE.md](./postman/POSTMAN_GUIDE.md) for detailed instructions.
 
 ### Authentication
-- `POST /auth` - Login and get JWT token
-- `GET /auth/verify` - Verify JWT token
+- `POST /auth` - Login and get JWT token (legacy endpoint)
+- `GET /auth/verify` - Verify Clerk session token
+- `POST /auth/sync` - Manually sync Clerk user to database (fallback)
+- `POST /webhooks/clerk` - Clerk webhook endpoint (automatic user sync)
 
 ### Public Endpoints
 - `GET /year` - Get all years (Note: Create years via Prisma Studio - no POST endpoint available)
@@ -161,12 +165,14 @@ Update the CORS configuration in `src/helpers/routes.ts` to add more origins.
 
 ## 🔒 Security Notes
 
-- Always use a strong, random `JWT_TOKEN` in production
+- Always use a valid `CLERK_SECRET_KEY` from your Clerk Dashboard
+- Set up Clerk webhooks in production for automatic user sync
+- Keep `CLERK_WEBHOOK_SECRET` secure - it verifies webhook authenticity
 - Set a strong `ADMIN_PASSWORD` before running the database seed
 - Keep your `.env` file secure and never commit it to version control
 - The default admin user ID is `1` - ensure this user is properly secured
-- Change the admin password after first login in production
 - Use HTTPS in production environments
+- Users are automatically synced via webhooks when created/updated in Clerk
 
 ## 📦 Technology Stack
 
@@ -175,7 +181,7 @@ Update the CORS configuration in `src/helpers/routes.ts` to add more origins.
 - **Framework**: Express.js
 - **ORM**: Prisma
 - **Database**: PostgreSQL (Supabase)
-- **Authentication**: JWT + bcrypt
+- **Authentication**: Clerk (with legacy bcrypt support)
 - **Package Manager**: pnpm
 
 ## 🚀 Deployment

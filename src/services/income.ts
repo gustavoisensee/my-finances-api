@@ -6,7 +6,7 @@ import db from './db';
 
 export const getAllIncomes = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const incomes = await db.income.findMany({
       take: getQueryTake(req),
       where: {
@@ -24,7 +24,7 @@ export const getAllIncomes = async (req: Request, res: Response) => {
 
 export const createIncome = async (req: Request, res: Response) => {
   try {
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       value,
@@ -78,7 +78,7 @@ export const updateIncome = async (req: Request, res: Response) => {
         message: 'Id is required.'
       });
     }
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
 
     const {
       value,
@@ -143,7 +143,7 @@ export const deleteIncome = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = getUserId(req);
+    const userId = await getUserId(req);
     const income = await db.income.delete({
       where: { id: Number(id), month: { userId }}
     });
