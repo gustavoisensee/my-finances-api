@@ -37,10 +37,6 @@ async function cleanDatabase() {
     const users = await prisma.user.deleteMany({});
     console.log(`   ✅ Deleted ${users.count} users\n`);
 
-    console.log('🗑️  Deleting Genders...');
-    const genders = await prisma.gender.deleteMany({});
-    console.log(`   ✅ Deleted ${genders.count} genders\n`);
-
     console.log('🗑️  Deleting Access Tokens...');
     const accessTokens = await prisma.accessToken.deleteMany({});
     console.log(`   ✅ Deleted ${accessTokens.count} access tokens\n`);

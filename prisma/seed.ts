@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -10,80 +9,46 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding...\n');
 
-  // 1. Create default genders if they don't exist
-  console.log('📝 Creating default genders...');
-  const genders = [
-    { id: 1, name: 'Male' },
-    { id: 2, name: 'Female' },
-    { id: 3, name: 'Other' },
-    { id: 4, name: 'Prefer not to say' }
+  // 1. Create default years
+  console.log('📅 Creating default years...');
+  const defaultYears = [
+    { value: 2024 },
+    { value: 2025 },
+    { value: 2026 }
   ];
 
-  for (const gender of genders) {
-    await prisma.gender.upsert({
-      where: { id: gender.id },
-      update: {},
-      create: gender
+  for (const year of defaultYears) {
+    const existing = await prisma.year.findFirst({
+      where: { value: year.value }
     });
-  }
-  console.log('✅ Genders created/verified\n');
 
-  // 2. Create admin user
-  console.log('👤 Creating admin user...');
-  
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@myfinances.com';
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  const adminFirstName = process.env.ADMIN_FIRST_NAME || 'Admin';
-  const adminLastName = process.env.ADMIN_LAST_NAME || 'User';
-
-  if (!adminPassword) {
-    console.error('❌ Error: ADMIN_PASSWORD environment variable is required!');
-    console.error('Please set ADMIN_PASSWORD in your .env file\n');
-    process.exit(1);
-  }
-
-  // Hash the password using the same method as the user service
-  const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-  const adminUser = await prisma.user.upsert({
-    where: { id: 1 },
-    update: {
-      email: adminEmail,
-      password: hashedPassword,
-      firstName: adminFirstName,
-      lastName: adminLastName
-    },
-    create: {
-      id: 1,
-      email: adminEmail,
-      password: hashedPassword,
-      firstName: adminFirstName,
-      lastName: adminLastName,
-      dateOfBirth: new Date('1988-08-22'),
-      genderId: 1, // Prefer not to say
-      createdAt: new Date()
+    if (!existing) {
+      await prisma.year.create({
+        data: {
+          ...year,
+          createdAt: new Date()
+        }
+      });
     }
-  });
+  }
+  console.log('✅ Default years created\n');
 
-  console.log('✅ Admin user created/updated:');
-  console.log(`   Email: ${adminUser.email}`);
-  console.log(`   Name: ${adminUser.firstName} ${adminUser.lastName}`);
-  console.log(`   ID: ${adminUser.id}\n`);
-
-  // 3. Create some default categories (optional)
+  // 2. Create default categories available to all users
+  // These categories have userId: null, making them system-wide defaults
+  // Users can also create their own custom categories
   console.log('🏷️  Creating default categories...');
   const defaultCategories = [
-    { name: 'Housing', userId: 1 },
-    { name: 'Transportation', userId: 1 },
-    { name: 'Food & Dining', userId: 1 },
-    { name: 'Utilities', userId: 1 },
-    { name: 'Healthcare', userId: 1 },
-    { name: 'Entertainment', userId: 1 },
-    { name: 'Shopping', userId: 1 },
-    { name: 'Personal Care', userId: 1 },
-    { name: 'Education', userId: 1 },
-    { name: 'Savings & Investments', userId: 1 },
-    { name: 'Other', userId: 1 }
+    { name: 'Housing', userId: null },
+    { name: 'Transportation', userId: null },
+    { name: 'Food & Dining', userId: null },
+    { name: 'Utilities', userId: null },
+    { name: 'Healthcare', userId: null },
+    { name: 'Entertainment', userId: null },
+    { name: 'Shopping', userId: null },
+    { name: 'Personal Care', userId: null },
+    { name: 'Education', userId: null },
+    { name: 'Savings & Investments', userId: null },
+    { name: 'Other', userId: null }
   ];
 
   for (const category of defaultCategories) {
@@ -106,6 +71,10 @@ async function main() {
   console.log('✅ Default categories created\n');
 
   console.log('🎉 Database seeding completed successfully!');
+  console.log('📊 Summary:');
+  console.log(`   - ${defaultYears.length} years (2024-2026)`);
+  console.log(`   - ${defaultCategories.length} default categories`);
+  console.log('ℹ️  Users are synced automatically via Clerk webhooks when they sign up/sign in');
 }
 
 main()

@@ -1,27 +1,18 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
-import * as service from '../services/auth';
+import * as clerkService from '../services/auth.clerk';
 
-export const authenticate = async (req: Request, res: Response) => {
-  await service.authenticate(req, res);
-};
-
-export const verify = (req: Request, res: Response) => {
-  service.verify(req, res);
-};
-
-export const syncClerkUser = async (req: Request, res: Response) => {
-  await service.syncClerkUser(req, res);
-};
-
+/**
+ * Authentication Controller
+ * 
+ * Handles Clerk webhook events for automatic user synchronization.
+ * This is the only authentication-related endpoint in the API.
+ * 
+ * Endpoint: POST /webhooks/clerk
+ * 
+ * All other authentication is handled by Clerk's middleware (requireAuth)
+ * which validates session tokens on protected routes.
+ */
 export const handleClerkWebhook = async (req: Request, res: Response) => {
-  await service.handleClerkWebhook(req, res);
-};
-
-export const mustBeAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-  service.mustBeAuthenticated(req, res, next);
-};
-
-export const mustBeAuthenticatedAdmin = (req: Request, res: Response, next: NextFunction) => {
-  service.mustBeAuthenticatedAdmin(req, res, next);
+  await clerkService.handleClerkWebhook(req, res);
 };

@@ -1,22 +1,21 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
 
 import { getQueryTake } from '../helpers/query';
-import db, { DEFAULT_ADMIN_USER_ID } from './db';
+import db from './db';
 
+/**
+ * Get all users
+ * Note: This only returns basic sync data (id, clerkId, createdAt)
+ * To get user profile data (name, email, etc.), use Clerk's API with the clerkId
+ */
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await db.user.findMany({
       take: getQueryTake(req),
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
-        dateOfBirth: true,
-        email: true,
-        password: false,
-        createdAt: true,
-        genderId: true
+        clerkId: true,
+        createdAt: true
       }
     });
 
@@ -26,45 +25,25 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Create user
+ * Note: Users are automatically created via Clerk webhooks
+ * This endpoint is kept for manual/admin user creation if needed
+ */
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const {
-      firstName,
-      lastName,
-      dateOfBirth,
-      email,
-      password,
-      createdAt,
-      genderId
-    } = req.body;
+    const { clerkId } = req.body;
 
-    if (!email && !password) {
-      return res.json({
-        message: 'Email and password are required.'
+    if (!clerkId) {
+      return res.status(400).json({
+        message: 'clerkId is required.'
       });
     }
 
-    const hash = await bcrypt.hash(password, 10);
-
     const user = await db.user.create({
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        dateOfBirth: true,
-        email: true,
-        password: false,
-        createdAt: true,
-        genderId: true
-      },
       data: {
-        firstName,
-        lastName,
-        dateOfBirth,
-        email,
-        password: hash,
-        createdAt,
-        genderId
+        clerkId,
+        createdAt: new Date()
       }
     });
 
@@ -77,51 +56,31 @@ export const createUser = async (req: Request, res: Response) => {
   }
 }
 
+/**
+ * Update user
+ * Note: User profile data is managed in Clerk, not in our database
+ * This endpoint can only update the clerkId if needed
+ */
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) {
-      return res.status(500).json({
+      return res.status(400).json({
         message: 'Id is required.'
       });
     }
 
-    const {
-      firstName,
-      lastName,
-      dateOfBirth,
-      email,
-      createdAt,
-      genderId
-    } = req.body;
+    const { clerkId } = req.body;
 
-    if (!email) {
-      return res.status(500).json({
-        message: 'Email is required.'
+    if (!clerkId) {
+      return res.status(400).json({
+        message: 'clerkId is required.'
       });
     }
 
-    const oldData = await db.user.findFirst({ where: { id: Number(id) }});
     const user = await db.user.update({
       where: { id: Number(id) },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        dateOfBirth: true,
-        email: true,
-        password: false,
-        createdAt: true,
-        genderId: true
-      },
-      data: {
-        ...oldData,
-        firstName,
-        lastName,
-        dateOfBirth,
-        email,
-        genderId
-      }
+      data: { clerkId }
     });
 
     return res.json(user);
@@ -133,32 +92,21 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Delete user
+ * Note: This will cascade delete all user data (months, budgets, expenses, categories)
+ */
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) {
-      return res.status(500).json({
+      return res.status(400).json({
         message: 'Id is required.'
-      });
-    }
-    if (Number(id) === DEFAULT_ADMIN_USER_ID) {
-      return res.status(500).json({
-        message: 'Admin can not be deleted.'
       });
     }
 
     const user = await db.user.delete({
-      where: { id: Number(id) },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        dateOfBirth: true,
-        email: true,
-        password: false,
-        createdAt: true,
-        genderId: true
-      }
+      where: { id: Number(id) }
     });
 
     return res.json(user);

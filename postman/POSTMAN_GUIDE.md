@@ -35,36 +35,45 @@ All files are located in the `postman/` folder:
 
 ## 🔐 Authentication Workflow
 
-### 1. Login
+### Using Clerk Authentication
 
-First, authenticate to get your JWT token:
+This API uses Clerk for authentication. To use the API:
 
-1. Navigate to **Authentication → Login**
-2. Update the request body with valid credentials:
-   ```json
-   {
-     "email": "your-email@example.com",
-     "password": "your-password"
-   }
-   ```
-3. Click **Send**
-4. The token will be **automatically saved** to the environment variable `auth_token`
+1. **Sign up/Login through your Clerk-enabled frontend application**
+2. **Copy your Clerk session token** from your frontend application
+   - The token is automatically managed by Clerk's frontend SDK
+   - You can find it in cookies or via `await clerk.session.getToken()`
+3. **Set the token in Postman**:
+   - Open your environment (Local or Production)
+   - Set the `auth_token` variable to your Clerk session token
+   - Save the environment
+4. **User sync happens automatically via webhooks**:
+   - When you create an account in Clerk, the webhook syncs the user to the database
+   - When you sign in, the `session.created` webhook ensures your user is synced
 
-### 2. Use Protected Endpoints
+### How Authentication Works
 
-All protected endpoints automatically use the `{{auth_token}}` variable in the `authorization` header.
+- All protected endpoints use Clerk's `requireAuth()` middleware
+- Your Clerk session token is validated on every request
+- The API looks up your internal user ID using your Clerk user ID
+- No manual token verification or user sync endpoints are needed
 
 ## 📋 Collection Structure
 
-### Authentication
-- **Login** - Get JWT token (saves token automatically)
-- **Verify Token** - Check if token is valid
+### Webhooks
+- **Clerk Webhook** - Receives events from Clerk (user.created, user.updated, user.deleted, session.created)
+  - Note: This is a server-to-server endpoint, not meant for manual Postman testing
+  - User sync happens automatically when you sign up/sign in via your frontend
 
 ### Public Endpoints
-- **Get All Years** - No authentication required
-- **Get All Categories** - No authentication required (returns user's categories + admin's default categories if authenticated)
+- **Index** - API index page
+- **Status** - API health check
 
 ### Protected Endpoints (Require Authentication)
+
+#### Years & Categories
+- Get All Years
+- Get All Categories (returns user's custom categories + system default categories)
 
 #### Months
 - Get All Months (with query params for includes)
@@ -109,8 +118,8 @@ All protected endpoints automatically use the `{{auth_token}}` variable in the `
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `base_url` | API base URL | `http://localhost:3001` |
-| `auth_token` | JWT authentication token | Auto-set after login |
-| `user_id` | Current user ID | Auto-set after login |
+| `auth_token` | Clerk session token | Set manually from frontend |
+| `user_id` | Current user ID | Auto-set after token verification |
 
 ### Switching Environments
 
@@ -122,15 +131,11 @@ All protected endpoints automatically use the `{{auth_token}}` variable in the `
 ### Create User (Admin)
 ```json
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "dateOfBirth": "1990-05-15T00:00:00.000Z",
-  "email": "john.doe@example.com",
-  "password": "securePassword123",
-  "createdAt": "2025-01-01T00:00:00.000Z",
-  "genderId": 1
+  "clerkId": "user_2abc123def456"
 }
 ```
+
+**Note**: Users are automatically created via Clerk webhooks. This endpoint is for manual/admin creation only. The clerkId must be a valid Clerk user ID.
 
 ### Create Month
 ```json
@@ -196,8 +201,21 @@ Query parameters:
 
 ## ⚙️ Tips & Tricks
 
-### 1. Auto-Save Token
-The Login request has a test script that automatically saves the JWT token and user ID to environment variables. You don't need to copy/paste manually!
+### 1. Get Your Clerk Token
+
+**Option A: From Browser DevTools (if using Clerk's default cookies)**
+- Open browser DevTools (F12)
+- Go to Application/Storage → Cookies
+- Find your Clerk session cookie (usually `__session` or `__clerk_session`)
+- Copy the value and set it as `auth_token` in Postman environment
+
+**Option B: From Frontend Code (recommended)**
+In your frontend application, you can get the token programmatically:
+```javascript
+const token = await clerk.session.getToken();
+console.log('Clerk Token:', token);
+```
+Copy this token and set it as `auth_token` in Postman environment
 
 ### 2. Test All Endpoints Quickly
 Use Postman's **Collection Runner** to test all endpoints sequentially:
@@ -207,14 +225,17 @@ Use Postman's **Collection Runner** to test all endpoints sequentially:
 
 ### 3. Create Data Flow
 Follow this order to create a complete data set:
-1. Login (get token)
-2. **Create Year** (via Prisma Studio - no API endpoint exists yet)
-   - Run `pnpm run db:studio`
-   - Add a Year record (e.g., 2025)
-3. Create Month (requires yearId)
-4. Create Budget (requires monthId)
-5. Create Expense (requires budgetId and categoryId)
-6. Create Income (requires monthId)
+1. **Sign up/Sign in via Clerk** (in your frontend application)
+   - User is automatically synced to database via webhooks
+2. **Get your Clerk session token** (from frontend)
+3. **Set token in Postman** environment variable `auth_token`
+4. **Get available years** using "Get All Years" request
+   - Default years (2024, 2025, 2026) are already seeded
+   - Note the year ID you want to use
+5. Create Month (requires yearId from step 4)
+6. Create Budget (requires monthId from step 5)
+7. Create Expense (requires budgetId and categoryId)
+8. Create Income (requires monthId from step 5)
 
 ### 4. Use Variables in Request Bodies
 You can use environment variables in request bodies:
@@ -230,22 +251,48 @@ Right-click any request and select **Duplicate** to create variations for testin
 
 ## 🔒 Admin Access
 
-To test admin endpoints:
-1. Login with admin credentials (user ID: 1)
-2. The token will be automatically set
-3. Admin-only endpoints will now work
+Admin access is controlled by **Clerk roles** in Clerk Organizations.
 
-**Note**: Regular users cannot access admin endpoints even with a valid token.
+**To set up admin access:**
+1. **Enable Organizations** in Clerk Dashboard
+2. **Create an organization** (e.g., "Admins")
+3. **Add users to the organization** with the 'admin' role
+4. Users with 'admin' or 'org:admin' role will have access to admin endpoints
+
+**To test admin endpoints:**
+1. Ensure your user has the 'admin' role in a Clerk organization
+2. Sign in via Clerk using the admin account
+3. Copy your Clerk session token to Postman environment variable `auth_token`
+4. Admin-only endpoints will now work
+
+**Note**: Admin access is determined by Clerk roles, not database user IDs. Any user with the admin role in Clerk can access admin endpoints.
 
 ## 🐛 Troubleshooting
 
-### "Token is invalid"
-- Your token may have expired
-- Re-run the **Login** request to get a new token
+### 401 Unauthorized Response
+When you see this JSON response:
+```json
+{
+  "error": "Unauthorized",
+  "message": "Authentication required. Please provide a valid Clerk session token.",
+  "code": "UNAUTHENTICATED"
+}
+```
+
+**Common causes:**
+- Your Clerk session token may have expired (tokens typically expire after a certain period)
+- No token was provided in the request
+- Token is invalid or malformed
+
+**Solutions:**
+- Get a new token from your frontend application
+- Update the `auth_token` environment variable in Postman
+- Ensure you're setting the token in the Authorization header (should be automatic if using the collection's auth settings)
 
 ### "Year does not exist" or "Month does not exist"
-- **Years must be created via Prisma Studio** (no API endpoint exists)
-  - Run `pnpm run db:studio` and manually add Year records
+- Default years (2024, 2025, 2026) are created during database seeding
+- Run "Get All Years" to see available years and their IDs
+- Additional years can be created via Prisma Studio (`pnpm run db:studio`)
 - Ensure you've created a month before creating budgets/incomes
 - Check that the `yearId` and `monthId` are correct
 
@@ -253,10 +300,46 @@ To test admin endpoints:
 - Ensure you've created a budget before creating expenses
 - Check that the `budgetId` is correct and belongs to your user
 
-### 401 Unauthorized
-- Make sure you've run the **Login** request first
-- Check that the `auth_token` environment variable is set
-- Verify you're using the correct environment
+### 401 "User not found" Response
+When you see this JSON response:
+```json
+{
+  "error": "Unauthorized",
+  "message": "User not found in database. Please ensure your account is synced.",
+  "code": "USER_NOT_FOUND"
+}
+```
+
+**This means:**
+- You're authenticated with Clerk (valid token)
+- But your user hasn't been synced to our database yet
+
+**Solutions:**
+1. Sign in again via your frontend (triggers the `session.created` webhook)
+2. Check that your Clerk webhooks are configured correctly
+3. Verify your user exists in the database (via Prisma Studio: `pnpm run db:studio`)
+4. The webhook should have automatically created your user when you signed up or signed in
+
+### 403 Forbidden (Admin endpoints only)
+When you see this JSON response:
+```json
+{
+  "error": "Forbidden",
+  "message": "Admin access required. This endpoint is restricted to administrators only.",
+  "code": "ADMIN_ACCESS_REQUIRED"
+}
+```
+
+**This means:**
+- You're authenticated successfully
+- But you don't have the admin role in Clerk
+- Only users with 'admin' or 'org:admin' role can access these endpoints
+
+**How to fix:**
+1. Go to Clerk Dashboard → Organizations
+2. Ensure you're a member of an organization with the 'admin' role
+3. Sign in again to get a new token with the updated role
+4. Update your `auth_token` in Postman
 
 ### Connection Refused
 - Ensure the API server is running locally (`pnpm run dev`)
@@ -276,10 +359,10 @@ To test admin endpoints:
 - [ ] Select appropriate environment (Local/Production)
 - [ ] Start your local server (`pnpm run dev`)
 - [ ] Run database migrations (`pnpm run db:migrate:dev`)
-- [ ] Seed database with admin user (`pnpm run db:seed`)
-- [ ] **Create at least one Year** via Prisma Studio (`pnpm run db:studio`)
-- [ ] Run **Login** request to authenticate
-- [ ] Verify token is saved (check environment variables)
+- [ ] Seed database with default years and categories (`pnpm run db:seed`)
+- [ ] **Sign up/Sign in via Clerk frontend** (user automatically syncs via webhook)
+- [ ] **Get session token** from your frontend application
+- [ ] **Set token in Postman** environment variable `auth_token`
 - [ ] Test public endpoints (Years, Categories)
 - [ ] Test protected endpoints (Months, Budgets, etc.)
 - [ ] Test admin endpoints (if you have admin access)

@@ -1,5 +1,6 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import { requireAuth, getAuth } from '@clerk/express';
 
 import { getAllAccessTokens } from '../controllers/accessToken';
 import { createBudget, deleteBudget, getAllBudgets, updateBudget } from '../controllers/budget';
@@ -8,10 +9,31 @@ import { createExpense, deleteExpense, getAllExpenses, updateExpense } from '../
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from '../controllers/income';
 import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById } from '../controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from '../controllers/user';
-import { authenticate, mustBeAuthenticated, mustBeAuthenticatedAdmin, verify, syncClerkUser, handleClerkWebhook } from '../controllers/auth';
+import { handleClerkWebhook } from '../controllers/auth';
 import { getAllYears } from '../controllers/year';
+import { requireAdmin } from './auth';
 
-export const initMiddleware = (app: Express) => {
+/**
+ * Custom authentication middleware that returns proper 401 JSON response
+ * Instead of redirecting or returning plain text, returns a structured JSON error
+ */
+const customRequireAuth = () => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = getAuth(req);
+    
+    if (!userId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required. Please provide a valid Clerk session token.',
+        code: 'UNAUTHENTICATED'
+      });
+    }
+    
+    next();
+  };
+};
+
+export const initMiddlewares = (app: Express) => {
   app.use(cors({
     origin: [
       'http://localhost:3000',
@@ -21,6 +43,18 @@ export const initMiddleware = (app: Express) => {
   app.use(express.json());
 };
 
+/**
+ * Initialize webhook routes
+ * 
+ * IMPORTANT: Webhook routes must be registered BEFORE express.json() middleware
+ * because they need the raw request body for signature verification.
+ * 
+ * Clerk Webhook Setup:
+ * 1. Go to Clerk Dashboard → Webhooks
+ * 2. Add endpoint: https://your-domain.com/webhooks/clerk
+ * 3. Subscribe to: user.created, user.updated, user.deleted, session.created
+ * 4. Copy signing secret to CLERK_WEBHOOK_SECRET in .env
+ */
 export const initWebhookRoutes = (app: Express) => {
   // Webhook endpoint needs raw body for signature verification
   // MUST be registered before express.json() middleware
@@ -35,62 +69,69 @@ export const initWebhookRoutes = (app: Express) => {
   );
 };
 
-export const initAuthenticationRoutes = (app: Express) => {
+export const initNotAuthenticatedRoutes = (app: Express) => {
   app.get('/', (req: Request, res: Response) => {
     res.send('Index');
   });
-  
-  // Auth endpoints
-  app.post('/auth', authenticate);
-  app.get('/auth/verify', verify);
-  app.post('/auth/sync', syncClerkUser); // Kept as fallback
+  app.get('/status', (req: Request, res: Response) => {
+    res.send('Ok');
+  });
 };
 
-export const initNotAuthenticatedRoutes = (app: Express) => {
-  app.get('/year', getAllYears);
-  app.get('/category', getAllCategories);
-};
-
+/**
+ * Initialize authenticated routes
+ * 
+ * All routes here require a valid Clerk session token.
+ * The token should be passed in the Authorization header: "Bearer <token>"
+ * 
+ * Authentication is handled by customRequireAuth() middleware which:
+ * - Checks if user is authenticated via Clerk
+ * - Returns 401 JSON response if not authenticated (instead of redirecting)
+ * - Allows request to proceed if authenticated
+ * 
+ * User identification is done via getUserId() helper which maps Clerk ID to internal user ID.
+ */
 export const initAuthenticatedRoutes = (app: Express) => {
-  // -- Authenticates ALL endpoints below this line.
-  app.use(mustBeAuthenticated);
-
   // --- Authenticated routes --------------
+  // Year and Category routes
+  app.get('/year', customRequireAuth(), getAllYears);
+  app.get('/category', customRequireAuth(), getAllCategories);
+
   // Budget routes
-  app.get('/budget', getAllBudgets);
-  app.post('/budget', createBudget);
-  app.put('/budget/:id', updateBudget);
-  app.delete('/budget/:id', deleteBudget);
+  app.get('/budget', customRequireAuth(), getAllBudgets);
+  app.post('/budget', customRequireAuth(), createBudget);
+  app.put('/budget/:id', customRequireAuth(), updateBudget);
+  app.delete('/budget/:id', customRequireAuth(), deleteBudget);
 
   // Expense routes
-  app.get('/expense', getAllExpenses);
-  app.post('/expense', createExpense);
-  app.put('/expense/:id', updateExpense);
-  app.delete('/expense/:id', deleteExpense);
+  app.get('/expense', customRequireAuth(), getAllExpenses);
+  app.post('/expense', customRequireAuth(), createExpense);
+  app.put('/expense/:id', customRequireAuth(), updateExpense);
+  app.delete('/expense/:id', customRequireAuth(), deleteExpense);
 
   // Income routes
-  app.get('/income', getAllIncomes);
-  app.post('/income', createIncome);
-  app.put('/income/:id', updateIncome);
-  app.delete('/income/:id', deleteIncome);
+  app.get('/income', customRequireAuth(), getAllIncomes);
+  app.post('/income', customRequireAuth(), createIncome);
+  app.put('/income/:id', customRequireAuth(), updateIncome);
+  app.delete('/income/:id', customRequireAuth(), deleteIncome);
 
   // Month routes
-  app.get('/month', getAllMonths);
-  app.get('/month/:id', getMonthById);
-  app.post('/month', createMonth);
-  app.put('/month/:id', updateMonth);
-  app.delete('/month/:id', deleteMonth);
+  app.get('/month', customRequireAuth(), getAllMonths);
+  app.get('/month/:id', customRequireAuth(), getMonthById);
+  app.post('/month', customRequireAuth(), createMonth);
+  app.put('/month/:id', customRequireAuth(), updateMonth);
+  app.delete('/month/:id', customRequireAuth(), deleteMonth);
 
 
   // --- Admin routes ----------------------
   // Access tokens routes
-  app.get('/access-token', mustBeAuthenticatedAdmin, getAllAccessTokens);
+  app.get('/access-token', customRequireAuth(), requireAdmin, getAllAccessTokens);
 
   // User routes
-  app.get('/user', mustBeAuthenticatedAdmin, getAllUsers);
-  app.post('/user', mustBeAuthenticatedAdmin, createUser);
-  app.put('/user/:id', mustBeAuthenticatedAdmin, updateUser);
-  app.delete('/user/:id', mustBeAuthenticatedAdmin, deleteUser);
+  app.get('/user', customRequireAuth(), requireAdmin, getAllUsers);
+  app.post('/user', customRequireAuth(), requireAdmin, createUser);
+  app.put('/user/:id', customRequireAuth(), requireAdmin, updateUser);
+  app.delete('/user/:id', customRequireAuth(), requireAdmin, deleteUser);
 };
 
 export const initOtherRoutes = (app: Express) => {

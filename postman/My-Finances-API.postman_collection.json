@@ -7,52 +7,104 @@
 	},
 	"item": [
 		{
-			"name": "Authentication",
+			"name": "Webhooks",
 			"item": [
 				{
-					"name": "Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    const jsonData = pm.response.json();",
-									"    pm.environment.set(\"auth_token\", jsonData.token);",
-									"    pm.environment.set(\"user_id\", jsonData.userId);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Clerk Webhook",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "svix-id",
+								"value": "msg_xxxxx",
+								"type": "text",
+								"description": "Webhook message ID (from Clerk)"
+							},
+							{
+								"key": "svix-timestamp",
+								"value": "1234567890",
+								"type": "text",
+								"description": "Webhook timestamp (from Clerk)"
+							},
+							{
+								"key": "svix-signature",
+								"value": "v1,xxxxx",
+								"type": "text",
+								"description": "Webhook signature (from Clerk)"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+							"raw": "{\n  \"type\": \"user.created\",\n  \"data\": {\n    \"id\": \"user_2abc123def456\",\n    \"email_addresses\": [\n      {\n        \"id\": \"idn_xxx\",\n        \"email_address\": \"user@example.com\"\n      }\n    ],\n    \"primary_email_address_id\": \"idn_xxx\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n  }\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/auth",
+							"raw": "{{base_url}}/webhooks/clerk",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"auth"
+								"webhooks",
+								"clerk"
 							]
 						},
-						"description": "Authenticate user and receive JWT token"
+						"description": "Clerk webhook endpoint for automatic user sync. This is called by Clerk servers (not meant for manual testing). Events: user.created, user.updated, user.deleted, session.created"
+					},
+					"response": []
+				}
+			],
+			"description": "Webhook endpoints (server-to-server, not for manual testing)"
+		},
+		{
+			"name": "Public",
+			"item": [
+				{
+					"name": "Index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "API index page"
 					},
 					"response": []
 				},
 				{
-					"name": "Verify Token",
+					"name": "Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"status"
+							]
+						},
+						"description": "API health check"
+					},
+					"response": []
+				}
+			],
+			"description": "Public endpoints that don't require authentication"
+		},
+		{
+			"name": "Years & Categories",
+			"item": [
+				{
+					"name": "Get All Years",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -62,31 +114,6 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{base_url}}/auth/verify",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"verify"
-							]
-						},
-						"description": "Verify if the JWT token is valid"
-					},
-					"response": []
-				}
-			],
-			"description": "Authentication endpoints for login and token verification"
-		},
-		{
-			"name": "Public",
-			"item": [
-				{
-					"name": "Get All Years",
-					"request": {
-						"method": "GET",
-						"header": [],
 						"url": {
 							"raw": "{{base_url}}/year?take=10",
 							"host": [
@@ -103,7 +130,7 @@
 								}
 							]
 						},
-						"description": "Get all years (public endpoint)"
+						"description": "Get all years (requires authentication). Note: Create years via Prisma Studio - no POST endpoint available."
 					},
 					"response": []
 				},
@@ -111,7 +138,13 @@
 					"name": "Get All Categories",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/category?take=20",
 							"host": [
@@ -128,12 +161,12 @@
 								}
 							]
 						},
-						"description": "Get all categories (public endpoint)"
+						"description": "Get all categories (requires authentication). Returns system default categories (userId: null) plus user's custom categories. System categories are seeded during database initialization."
 					},
 					"response": []
 				}
 			],
-			"description": "Public endpoints that don't require authentication"
+			"description": "Year and Category endpoints (require authentication)"
 		},
 		{
 			"name": "Months",
@@ -720,7 +753,7 @@
 								"key": "authorization",
 								"value": "{{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required"
+								"description": "Admin user token required (Clerk role: admin)"
 							}
 						],
 						"url": {
@@ -739,7 +772,7 @@
 								}
 							]
 						},
-						"description": "Get all users (admin only)"
+						"description": "Get all users (admin only). Returns minimal sync data: id, clerkId, createdAt. To get user profile data (name, email), use Clerk's API with the clerkId."
 					},
 					"response": []
 				},
@@ -756,12 +789,12 @@
 								"key": "authorization",
 								"value": "{{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required"
+								"description": "Admin user token required (Clerk role: admin)"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15T00:00:00.000Z\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"genderId\": 1\n}"
+							"raw": "{\n  \"clerkId\": \"user_2abc123def456\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/user",
@@ -772,7 +805,7 @@
 								"user"
 							]
 						},
-						"description": "Create a new user (admin only). Password will be hashed automatically."
+						"description": "Create a new user manually (admin only). Users are normally created automatically via Clerk webhooks when they sign up. This endpoint is for manual/admin user creation only. The clerkId must be a valid Clerk user ID."
 					},
 					"response": []
 				},
@@ -789,12 +822,12 @@
 								"key": "authorization",
 								"value": "{{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required"
+								"description": "Admin user token required (Clerk role: admin)"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"dateOfBirth\": \"1990-05-15T00:00:00.000Z\",\n  \"email\": \"john.smith@example.com\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"genderId\": 1\n}"
+							"raw": "{\n  \"clerkId\": \"user_2xyz789ghi012\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/user/2",
@@ -806,7 +839,7 @@
 								"2"
 							]
 						},
-						"description": "Update an existing user (admin only). Cannot update password through this endpoint."
+						"description": "Update a user's clerkId (admin only). User profile data (name, email, etc.) is managed in Clerk, not in the database."
 					},
 					"response": []
 				},
@@ -819,7 +852,7 @@
 								"key": "authorization",
 								"value": "{{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required"
+								"description": "Admin user token required (Clerk role: admin)"
 							}
 						],
 						"url": {
@@ -832,12 +865,12 @@
 								"2"
 							]
 						},
-						"description": "Delete a user (admin only). Cannot delete admin user (ID: 1)."
+						"description": "Delete a user (admin only). This will cascade delete all user data including months, budgets, expenses, and custom categories."
 					},
 					"response": []
 				}
 			],
-			"description": "Admin-only endpoints for managing users (requires admin authentication)"
+			"description": "Admin-only endpoints for managing users. Requires Clerk admin role ('admin' or 'org:admin'). User profile data is stored in Clerk - database only stores sync data (id, clerkId, createdAt)."
 		},
 		{
 			"name": "Admin - Access Tokens",

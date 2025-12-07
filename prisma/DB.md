@@ -46,8 +46,9 @@ DIRECT_URL="postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler
 # Server Configuration
 NODE_PORT=3001
 
-# JWT Secret (IMPORTANT: Change this to a secure random string)
-JWT_TOKEN=your-super-secret-jwt-token-change-this-in-production
+# Clerk Authentication
+CLERK_SECRET_KEY=your-clerk-secret-key
+CLERK_WEBHOOK_SECRET=your-clerk-webhook-secret
 ```
 
 **Important Notes:**
@@ -95,15 +96,13 @@ tsx prisma/seed.ts
 ```
 
 This will create:
-- Default genders (Male, Female, Other, Prefer not to say)
-- Admin user (ID: 1)
-- Default expense categories for the admin user (Housing, Transportation, Food & Dining, etc.)
+- Default years: 2024, 2025, 2026
+- Default expense categories available to all users (Housing, Transportation, Food & Dining, etc.)
 
-**Note**: Years, Months, Budgets, Expenses, and Incomes are NOT seeded automatically. 
-- **Years**: Must be created manually via Prisma Studio or direct database insert (no POST endpoint exists yet)
+**Note**: Months, Budgets, Expenses, and Incomes are NOT seeded automatically. 
+- **Years**: 2024-2026 are seeded automatically. Additional years can be created via Prisma Studio (no POST endpoint exists)
 - **Months, Budgets, Expenses, Incomes**: Created by users through the API as they use the application
-
-**Important**: Make sure `ADMIN_PASSWORD` is set in your `.env` file before running the seed script!
+- **Users**: Automatically synced via Clerk webhooks when users sign up/sign in
 
 ## 🔄 Running Migrations
 
@@ -181,11 +180,9 @@ git commit -m "Add phone number field to user table"
 ### Current Models
 
 **User**
-- Stores user authentication and profile information
-- Links to: Gender, Month, Category
-
-**Gender**
-- Lookup table for user genders
+- Minimal table for relational integrity (id, clerkId, createdAt)
+- Profile data (name, email) stored in Clerk
+- Links to: Month, Category
 
 **Year**
 - Represents a financial year
@@ -197,7 +194,9 @@ git commit -m "Add phone number field to user table"
 - Links to: Income, Budget
 
 **Category**
-- Expense categories (can be user-specific)
+- Expense categories
+- System categories have userId: null (created in seed)
+- User-specific categories have userId set
 - Belongs to: User (optional)
 - Links to: Expense
 
@@ -225,8 +224,7 @@ git commit -m "Add phone number field to user table"
 ```
 User
 ├── Months (one-to-many)
-├── Categories (one-to-many)
-└── Gender (many-to-one)
+└── Categories (one-to-many)
 
 Year
 └── Months (one-to-many)
@@ -425,14 +423,22 @@ Regenerates the Prisma Client without running migrations.
 
 ## 🔐 Production Deployment Checklist
 
-- [ ] Update `JWT_TOKEN` to a secure random string
-- [ ] Set a strong `ADMIN_PASSWORD` for the admin user
+- [ ] Set up Clerk project and get API keys
+- [ ] Update `CLERK_SECRET_KEY` with your production Clerk secret key
+- [ ] Enable Organizations in Clerk Dashboard for role-based admin access
+- [ ] Create an organization (e.g., "Admins") and assign admin role to admin users
+- [ ] Configure Clerk webhooks for automatic user sync:
+  - [ ] Go to Clerk Dashboard → Webhooks
+  - [ ] Add endpoint: `https://your-production-domain.com/webhooks/clerk`
+  - [ ] Subscribe to events: `user.created`, `user.updated`, `user.deleted`, `session.created`
+  - [ ] Copy the webhook signing secret
+- [ ] Update `CLERK_WEBHOOK_SECRET` with your Clerk webhook signing secret (from previous step)
 - [ ] Verify `DATABASE_URL` and `DIRECT_URL` are correct (uncomment `DIRECT_URL` in schema.prisma if needed)
 - [ ] Run `pnpm run db:generate` to generate Prisma Client
 - [ ] Run `pnpm run db:migrate` to apply migrations
-- [ ] Run `pnpm run db:seed` to create admin user and initial data
+- [ ] Run `pnpm run db:seed` to create default years and expense categories
 - [ ] Test database connection
-- [ ] Change admin password after first login
+- [ ] Test Clerk webhook integration (sign up a test user)
 - [ ] Set up database backups
 - [ ] Configure connection pooling if needed
 - [ ] Set up monitoring for database performance

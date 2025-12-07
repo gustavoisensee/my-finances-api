@@ -4,26 +4,22 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
-    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.10.2",
     "nodemon": "^3.1.7",
+    "prisma": "6.19.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@clerk/backend": "^2.24.0",
-    "@prisma/client": "^6.19.0",
+    "@clerk/express": "^1.7.55",
+    "@prisma/client": "6.19.0",
     "@types/cors": "^2.8.17",
-    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2",
-    "prisma": "^6.19.0"
+    "express": "^4.21.2"
   },
   "scripts": {
     "dev": "nodemon --exec tsx index.ts",
@@ -38,5 +34,5 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:clean": "tsx prisma/clean.ts"
   },
-  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }
