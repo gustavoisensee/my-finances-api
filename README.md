@@ -183,10 +183,10 @@ This project uses Prisma ORM with PostgreSQL (Supabase). For detailed database m
 ## 🌐 CORS Configuration
 
 The API allows requests from:
-- `http://localhost:3000` (local development)
-- `https://mf-v4.gustavoisensee.io` (production frontend)
+- `http://localhost:3000` (automatically enabled in development only)
+- `https://my-finances-web.gustavoisensee.com` (production frontend)
 
-Update the CORS configuration in `src/helpers/routes.ts` to add more origins.
+The localhost origin is automatically added when `NODE_ENV` is not set to `production`. Update the CORS configuration in `src/helpers/routes.ts` to add more origins.
 
 ## 🔒 Security Notes
 

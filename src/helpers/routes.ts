@@ -34,11 +34,18 @@ const customRequireAuth = () => {
 };
 
 export const initMiddlewares = (app: Express) => {
+  // Build allowed origins based on environment
+  const allowedOrigins = [
+    'https://my-finances-web.gustavoisensee.com'
+  ];
+
+  // Add localhost only in development
+  if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push('http://localhost:3000');
+  }
+
   app.use(cors({
-    origin: [
-      'http://localhost:3000',
-      'https://mf-v4.gustavoisensee.io'
-    ]
+    origin: allowedOrigins
   }));
   app.use(express.json());
 };
