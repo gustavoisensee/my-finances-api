@@ -17,6 +17,14 @@ type Params = {
 
 const isValid = (bool: string) => bool?.toLowerCase() === 'true';
 
+const getMonthName = (value: number): string => {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return months[value - 1] || 'Unknown';
+};
+
 export const getAllMonths = async (req: Request, res: Response) => {
   try {
     const {
@@ -192,4 +200,89 @@ export const deleteMonth = async (req: Request, res: Response) => {
       err
     });
   }
-}
+};
+
+export const copyMonth = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(500).json({
+        message: 'Id is required.'
+      });
+    }
+
+    const { value, yearId } = req.body;
+    const msgNumberMustBe = 'Value must be a number between 1 and 12.';
+
+    if (isMonthValid(value)) {
+      return res.status(500).json({
+        message: msgNumberMustBe
+      });
+    }
+
+    if (!yearId) {
+      return res.status(500).json({
+        message: 'yearId is required.'
+      });
+    }
+
+    const userId = await getUserId(req);
+
+    // Fetch source month with incomes and budgets (but not expenses)
+    const sourceMonth = await db.month.findFirst({
+      where: { id: Number(id), userId },
+      include: {
+        incomes: true,
+        budgets: true,
+        year: true
+      }
+    });
+
+    if (!sourceMonth) {
+      return res.status(404).json({
+        message: 'Source month not found.'
+      });
+    }
+
+    // Generate description: "Copy from December 2025"
+    const monthName = getMonthName(sourceMonth.value);
+    const description = `Copy from ${monthName} ${sourceMonth.year.value}`;
+    const now = new Date();
+
+    // Create the new month
+    const newMonth = await db.month.create({
+      data: {
+        value,
+        description,
+        createdAt: now,
+        yearId: Number(yearId),
+        userId,
+        incomes: {
+          create: sourceMonth.incomes.map(income => ({
+            description: income.description,
+            value: income.value,
+            createdAt: now
+          }))
+        },
+        budgets: {
+          create: sourceMonth.budgets.map(budget => ({
+            description: budget.description,
+            value: budget.value,
+            createdAt: now
+          }))
+        }
+      },
+      include: {
+        incomes: true,
+        budgets: true
+      }
+    });
+
+    return res.json(newMonth);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while copying month.',
+      err
+    });
+  }
+};

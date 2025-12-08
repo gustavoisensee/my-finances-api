@@ -192,6 +192,7 @@ git commit -m "Add phone number field to user table"
 - Represents a financial month within a year
 - Belongs to: User, Year
 - Links to: Income, Budget
+- Supports copying: Copy a month with its incomes and budgets to a new month/year (expenses not copied)
 
 **Category**
 - Expense categories

@@ -300,6 +300,40 @@
 					"response": []
 				},
 				{
+					"name": "Copy Month",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "authorization",
+								"value": "{{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"value\": 2,\n  \"yearId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/month/1/copy",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"month",
+								"1",
+								"copy"
+							]
+						},
+						"description": "Copy a month with its incomes and budgets to a new month/year. Expenses are not copied. The description is automatically generated (e.g., 'Copy from January 2025')."
+					},
+					"response": []
+				},
+				{
 					"name": "Update Month",
 					"request": {
 						"method": "PUT",

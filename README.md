@@ -134,6 +134,7 @@ All protected endpoints return a **401 Unauthorized** JSON response if no valid 
 - `GET /month` - Get all months
 - `GET /month/:id` - Get month by ID
 - `POST /month` - Create a month
+- `POST /month/:id/copy` - Copy a month with its incomes and budgets to a new month/year
 - `PUT /month/:id` - Update a month
 - `DELETE /month/:id` - Delete a month
 

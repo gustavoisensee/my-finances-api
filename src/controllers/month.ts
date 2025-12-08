@@ -21,3 +21,7 @@ export const updateMonth = async (req: Request, res: Response) => {
 export const deleteMonth = async (req: Request, res: Response) => {
   service.deleteMonth(req, res);
 };
+
+export const copyMonth = async (req: Request, res: Response) => {
+  service.copyMonth(req, res);
+};

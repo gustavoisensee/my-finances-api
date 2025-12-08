@@ -79,6 +79,7 @@ This API uses Clerk for authentication. To use the API:
 - Get All Months (with query params for includes)
 - Get Month By ID
 - Create Month
+- Copy Month
 - Update Month
 - Delete Month
 
@@ -146,6 +147,15 @@ This API uses Clerk for authentication. To use the API:
   "yearId": 1
 }
 ```
+
+### Copy Month
+```json
+{
+  "value": 2,
+  "yearId": 1
+}
+```
+**Note**: Copies a month with its incomes and budgets (expenses are not copied). The description is automatically generated (e.g., "Copy from January 2025").
 
 ### Create Budget
 ```json
@@ -233,9 +243,10 @@ Follow this order to create a complete data set:
    - Default years (2024, 2025, 2026) are already seeded
    - Note the year ID you want to use
 5. Create Month (requires yearId from step 4)
-6. Create Budget (requires monthId from step 5)
-7. Create Expense (requires budgetId and categoryId)
-8. Create Income (requires monthId from step 5)
+6. (Optional) Copy Month - to duplicate a month with its incomes and budgets
+7. Create Budget (requires monthId from step 5)
+8. Create Expense (requires budgetId and categoryId)
+9. Create Income (requires monthId from step 5)
 
 ### 4. Use Variables in Request Bodies
 You can use environment variables in request bodies:

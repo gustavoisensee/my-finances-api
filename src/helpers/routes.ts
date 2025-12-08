@@ -7,7 +7,7 @@ import { createBudget, deleteBudget, getAllBudgets, updateBudget } from '../cont
 import { getAllCategories } from '../controllers/category';
 import { createExpense, deleteExpense, getAllExpenses, updateExpense } from '../controllers/expense';
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from '../controllers/income';
-import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById } from '../controllers/month';
+import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById, copyMonth } from '../controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from '../controllers/user';
 import { handleClerkWebhook } from '../controllers/auth';
 import { getAllYears } from '../controllers/year';
@@ -126,6 +126,7 @@ export const initAuthenticatedRoutes = (app: Express) => {
   app.get('/month', customRequireAuth(), getAllMonths);
   app.get('/month/:id', customRequireAuth(), getMonthById);
   app.post('/month', customRequireAuth(), createMonth);
+  app.post('/month/:id/copy', customRequireAuth(), copyMonth);
   app.put('/month/:id', customRequireAuth(), updateMonth);
   app.delete('/month/:id', customRequireAuth(), deleteMonth);
 
