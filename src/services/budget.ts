@@ -29,6 +29,7 @@ export const createBudget = async (req: Request, res: Response) => {
     const {
       description,
       value,
+      color,
       createdAt,
       monthId
     } = req.body;
@@ -61,6 +62,7 @@ export const createBudget = async (req: Request, res: Response) => {
       data: {
         description,
         value,
+        color,
         createdAt,
         monthId
       }
@@ -89,6 +91,7 @@ export const updateBudget = async (req: Request, res: Response) => {
     const {
       description,
       value,
+      color,
       monthId
     } = req.body;
 
@@ -132,6 +135,7 @@ export const updateBudget = async (req: Request, res: Response) => {
         ...oldData,
         description,
         value,
+        color,
         monthId
       }
     });
