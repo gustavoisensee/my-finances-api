@@ -10,7 +10,7 @@ import {
 } from "./src/helpers/routes";
 
 const app = express();
-const port = process.env.NODE_PORT || 3001;
+const port = process.env.PORT || process.env.NODE_PORT || 3001;
 
 /**
  * IMPORTANT: Route initialization order matters!
