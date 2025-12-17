@@ -3,10 +3,10 @@ import cors from 'cors';
 import { requireAuth, getAuth } from '@clerk/express';
 
 import { getAllAccessTokens } from '../controllers/accessToken';
-import { createBudget, deleteBudget, getAllBudgets, updateBudget } from '../controllers/budget';
+import { createBudget, deleteBudget, getAllBudgets, reorderBudgets, updateBudget } from '../controllers/budget';
 import { getAllCategories } from '../controllers/category';
 import { createExpense, deleteExpense, getAllExpenses, updateExpense } from '../controllers/expense';
-import { createIncome, deleteIncome, getAllIncomes, updateIncome } from '../controllers/income';
+import { createIncome, deleteIncome, getAllIncomes, reorderIncomes, updateIncome } from '../controllers/income';
 import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById, copyMonth } from '../controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from '../controllers/user';
 import { handleClerkWebhook } from '../controllers/auth';
@@ -107,6 +107,7 @@ export const initAuthenticatedRoutes = (app: Express) => {
   // Budget routes
   app.get('/budget', customRequireAuth(), getAllBudgets);
   app.post('/budget', customRequireAuth(), createBudget);
+  app.put('/budget/reorder', customRequireAuth(), reorderBudgets);
   app.put('/budget/:id', customRequireAuth(), updateBudget);
   app.delete('/budget/:id', customRequireAuth(), deleteBudget);
 
@@ -119,6 +120,7 @@ export const initAuthenticatedRoutes = (app: Express) => {
   // Income routes
   app.get('/income', customRequireAuth(), getAllIncomes);
   app.post('/income', customRequireAuth(), createIncome);
+  app.put('/income/reorder', customRequireAuth(), reorderIncomes);
   app.put('/income/:id', customRequireAuth(), updateIncome);
   app.delete('/income/:id', customRequireAuth(), deleteIncome);
 

@@ -17,3 +17,7 @@ export const updateBudget = async (req: Request, res: Response) => {
 export const deleteBudget = async (req: Request, res: Response) => {
   await service.deleteBudget(req, res);
 };
+
+export const reorderBudgets = async (req: Request, res: Response) => {
+  await service.reorderBudgets(req, res);
+};

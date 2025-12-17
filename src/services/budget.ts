@@ -13,6 +13,9 @@ export const getAllBudgets = async (req: Request, res: Response) => {
         month: {
           userId
         }
+      },
+      orderBy: {
+        index: 'asc'
       }
     });
 
@@ -58,11 +61,24 @@ export const createBudget = async (req: Request, res: Response) => {
       });
     }
 
+    // Get the max index for budgets in this month
+    const maxIndexBudget = await db.budget.findFirst({
+      where: {
+        monthId: Number(monthId)
+      },
+      orderBy: {
+        index: 'desc'
+      }
+    });
+
+    const nextIndex = maxIndexBudget ? maxIndexBudget.index + 1 : 0;
+
     const budget = await db.budget.create({
       data: {
         description,
         value,
         color,
+        index: nextIndex,
         createdAt,
         monthId
       }
@@ -159,15 +175,117 @@ export const deleteBudget = async (req: Request, res: Response) => {
     }
 
     const userId = await getUserId(req);
-    const budget = await db.budget.delete({
-      where: { id: Number(id), month: { userId }}
+    
+    // Find the budget to get its monthId before deleting
+    const budgetToDelete = await db.budget.findFirst({
+      where: { 
+        id: Number(id),
+        month: { userId }
+      }
     });
 
-    return res.json(budget);
+    if (!budgetToDelete) {
+      return res.status(404).json({
+        message: 'Budget not found.'
+      });
+    }
+
+    const monthId = budgetToDelete.monthId;
+
+    // Delete the budget and reindex remaining budgets in a transaction
+    await db.$transaction(async (tx) => {
+      await tx.budget.delete({
+        where: { id: Number(id) }
+      });
+
+      // Get remaining budgets in the month, ordered by index
+      const remainingBudgets = await tx.budget.findMany({
+        where: { monthId },
+        orderBy: { index: 'asc' }
+      });
+
+      // Reindex them sequentially
+      for (let i = 0; i < remainingBudgets.length; i++) {
+        await tx.budget.update({
+          where: { id: remainingBudgets[i].id },
+          data: { index: i }
+        });
+      }
+    });
+
+    return res.json(budgetToDelete);
   } catch (err) {
     return res.status(500).json({
       message: 'Error while deleting budget.',
       err
     });
   }
-}
+};
+
+export const reorderBudgets = async (req: Request, res: Response) => {
+  try {
+    const userId = await getUserId(req);
+    const { monthId, budgetIds } = req.body;
+
+    if (!monthId || !Array.isArray(budgetIds)) {
+      return res.status(400).json({
+        message: 'monthId and budgetIds array are required.'
+      });
+    }
+
+    // Verify the month belongs to the user
+    const month = await db.month.findFirst({
+      where: {
+        id: Number(monthId),
+        userId
+      }
+    });
+
+    if (!month) {
+      return res.status(404).json({
+        message: 'Month does not exist.'
+      });
+    }
+
+    // Verify all budgets belong to this month and user
+    const budgets = await db.budget.findMany({
+      where: {
+        id: { in: budgetIds.map(id => Number(id)) },
+        monthId: Number(monthId),
+        month: { userId }
+      }
+    });
+
+    if (budgets.length !== budgetIds.length) {
+      return res.status(400).json({
+        message: 'Some budgets do not exist or do not belong to this month.'
+      });
+    }
+
+    // Update indices in a transaction
+    await db.$transaction(
+      budgetIds.map((budgetId, index) =>
+        db.budget.update({
+          where: { id: Number(budgetId) },
+          data: { index }
+        })
+      )
+    );
+
+    // Return updated budgets
+    const updatedBudgets = await db.budget.findMany({
+      where: {
+        monthId: Number(monthId),
+        month: { userId }
+      },
+      orderBy: { index: 'asc' }
+    });
+
+    return res.json(updatedBudgets);
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error while reordering budgets.',
+      err
+    });
+  }
+};

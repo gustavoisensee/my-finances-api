@@ -62,6 +62,7 @@ model Income {
   id            Int       @id @default(autoincrement())
   description   String?
   value         Float
+  index         Int       @default(0)
   createdAt     DateTime
   monthId       Int
   month         Month     @relation(fields: [monthId], references: [id], onDelete: Cascade)
@@ -72,6 +73,7 @@ model Budget {
   description   String
   value         Float
   color         String?
+  index         Int       @default(0)
   createdAt     DateTime
   monthId       Int
   month         Month     @relation(fields: [monthId], references: [id], onDelete: Cascade)

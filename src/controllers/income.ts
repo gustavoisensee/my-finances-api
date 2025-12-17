@@ -17,3 +17,7 @@ export const updateIncome = async (req: Request, res: Response) => {
 export const deleteIncome = async (req: Request, res: Response) => {
   await service.deleteIncome(req, res);
 };
+
+export const reorderIncomes = async (req: Request, res: Response) => {
+  await service.reorderIncomes(req, res);
+};
