@@ -121,11 +121,6 @@ export const updateIncome = async (req: Request, res: Response) => {
       });
     }
 
-    const oldData = await db.income.findFirst({
-      where: {
-        id: Number(id)
-      }
-    }) 
     const income = await db.income.update({
       where: {
         id: Number(id),
@@ -134,7 +129,6 @@ export const updateIncome = async (req: Request, res: Response) => {
         }
       },
       data: {
-        ...oldData,
         value,
         description,
         monthId

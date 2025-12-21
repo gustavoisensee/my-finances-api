@@ -135,11 +135,6 @@ export const updateBudget = async (req: Request, res: Response) => {
       });
     }
 
-    const oldData = await db.budget.findFirst({
-      where: {
-        id: Number(id)
-      }
-    }) 
     const budget = await db.budget.update({
       where: {
         id: Number(id),
@@ -148,7 +143,6 @@ export const updateBudget = async (req: Request, res: Response) => {
         }
       },
       data: {
-        ...oldData,
         description,
         value,
         color,
