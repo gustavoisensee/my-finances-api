@@ -261,6 +261,7 @@ export const copyMonth = async (req: Request, res: Response) => {
           create: sourceMonth.incomes.map(income => ({
             description: income.description,
             value: income.value,
+            index: income.index,
             createdAt: now
           }))
         },
@@ -268,6 +269,8 @@ export const copyMonth = async (req: Request, res: Response) => {
           create: sourceMonth.budgets.map(budget => ({
             description: budget.description,
             value: budget.value,
+            color: budget.color,
+            index: budget.index,
             createdAt: now
           }))
         }
