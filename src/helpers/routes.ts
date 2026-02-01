@@ -4,7 +4,7 @@ import { requireAuth, getAuth } from '@clerk/express';
 
 import { getAllAccessTokens } from '../controllers/accessToken';
 import { createBudget, deleteBudget, getAllBudgets, reorderBudgets, updateBudget } from '../controllers/budget';
-import { getAllCategories } from '../controllers/category';
+import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../controllers/category';
 import { createExpense, deleteExpense, getAllExpenses, updateExpense } from '../controllers/expense';
 import { createIncome, deleteIncome, getAllIncomes, reorderIncomes, updateIncome } from '../controllers/income';
 import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById, copyMonth } from '../controllers/month';
@@ -100,9 +100,14 @@ export const initNotAuthenticatedRoutes = (app: Express) => {
  */
 export const initAuthenticatedRoutes = (app: Express) => {
   // --- Authenticated routes --------------
-  // Year and Category routes
+  // Year routes
   app.get('/year', customRequireAuth(), getAllYears);
+
+  // Category routes
   app.get('/category', customRequireAuth(), getAllCategories);
+  app.post('/category', customRequireAuth(), createCategory);
+  app.put('/category/:id', customRequireAuth(), updateCategory);
+  app.delete('/category/:id', customRequireAuth(), deleteCategory);
 
   // Budget routes
   app.get('/budget', customRequireAuth(), getAllBudgets);
