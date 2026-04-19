@@ -74,7 +74,7 @@ async function main() {
   console.log('📊 Summary:');
   console.log(`   - ${defaultYears.length} years (2024-2026)`);
   console.log(`   - ${defaultCategories.length} default categories`);
-  console.log('ℹ️  Users are synced automatically via Clerk webhooks when they sign up/sign in');
+  console.log('ℹ️  Users are created on first Firebase sign-in (API)');
 }
 
 main()

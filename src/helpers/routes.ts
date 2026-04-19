@@ -1,79 +1,28 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
-import { requireAuth, getAuth } from '@clerk/express';
+import helmet from 'helmet';
 
 import { getAllAccessTokens } from '../controllers/accessToken';
 import { createBudget, deleteBudget, getAllBudgets, reorderBudgets, updateBudget } from '../controllers/budget';
-import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../controllers/category';
+import { createCategory, deleteCategory, getAllCategories, updateCategory } from '../controllers/category';
 import { createExpense, deleteExpense, getAllExpenses, updateExpense } from '../controllers/expense';
 import { createIncome, deleteIncome, getAllIncomes, reorderIncomes, updateIncome } from '../controllers/income';
 import { createMonth, updateMonth, getAllMonths, deleteMonth, getMonthById, copyMonth } from '../controllers/month';
 import { createUser, deleteUser, getAllUsers, updateUser } from '../controllers/user';
-import { handleClerkWebhook } from '../controllers/auth';
 import { getAllYears } from '../controllers/year';
-import { requireAdmin } from './auth';
-
-/**
- * Custom authentication middleware that returns proper 401 JSON response
- * Instead of redirecting or returning plain text, returns a structured JSON error
- */
-const customRequireAuth = () => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const { userId } = getAuth(req);
-    
-    if (!userId) {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Authentication required. Please provide a valid Clerk session token.',
-        code: 'UNAUTHENTICATED'
-      });
-    }
-    
-    next();
-  };
-};
+import { requireAdmin, requireFirebaseAuth } from './auth';
+import { errorHandler } from '../middleware/errorHandler';
 
 export const initMiddlewares = (app: Express) => {
-  // Build allowed origins based on environment
-  const allowedOrigins = [
-    'https://my-finances-web.gustavoisensee.com'
-  ];
+  app.use(helmet());
 
-  // Add localhost only in development
+  const allowedOrigins = ['https://my-finances-web.gustavoisensee.com'];
   if (process.env.NODE_ENV !== 'production') {
     allowedOrigins.push('http://localhost:3000');
   }
 
-  app.use(cors({
-    origin: allowedOrigins
-  }));
-  app.use(express.json());
-};
-
-/**
- * Initialize webhook routes
- * 
- * IMPORTANT: Webhook routes must be registered BEFORE express.json() middleware
- * because they need the raw request body for signature verification.
- * 
- * Clerk Webhook Setup:
- * 1. Go to Clerk Dashboard → Webhooks
- * 2. Add endpoint: https://your-domain.com/webhooks/clerk
- * 3. Subscribe to: user.created, user.updated, user.deleted, session.created
- * 4. Copy signing secret to CLERK_WEBHOOK_SECRET in .env
- */
-export const initWebhookRoutes = (app: Express) => {
-  // Webhook endpoint needs raw body for signature verification
-  // MUST be registered before express.json() middleware
-  // Note: CORS is not needed for webhooks (server-to-server), but we add it anyway
-  app.post('/webhooks/clerk', 
-    cors({
-      origin: '*', // Webhooks come from Clerk's servers
-      methods: ['POST']
-    }),
-    express.raw({ type: 'application/json' }), 
-    handleClerkWebhook
-  );
+  app.use(cors({ origin: allowedOrigins }));
+  app.use(express.json({ limit: '1mb' }));
 };
 
 export const initNotAuthenticatedRoutes = (app: Express) => {
@@ -85,73 +34,51 @@ export const initNotAuthenticatedRoutes = (app: Express) => {
   });
 };
 
-/**
- * Initialize authenticated routes
- * 
- * All routes here require a valid Clerk session token.
- * The token should be passed in the Authorization header: "Bearer <token>"
- * 
- * Authentication is handled by customRequireAuth() middleware which:
- * - Checks if user is authenticated via Clerk
- * - Returns 401 JSON response if not authenticated (instead of redirecting)
- * - Allows request to proceed if authenticated
- * 
- * User identification is done via getUserId() helper which maps Clerk ID to internal user ID.
- */
 export const initAuthenticatedRoutes = (app: Express) => {
-  // --- Authenticated routes --------------
-  // Year routes
-  app.get('/year', customRequireAuth(), getAllYears);
+  app.get('/year', requireFirebaseAuth(), getAllYears);
+  app.get('/category', requireFirebaseAuth(), getAllCategories);
+  app.post('/category', requireFirebaseAuth(), createCategory);
+  app.put('/category/:id', requireFirebaseAuth(), updateCategory);
+  app.delete('/category/:id', requireFirebaseAuth(), deleteCategory);
 
-  // Category routes
-  app.get('/category', customRequireAuth(), getAllCategories);
-  app.post('/category', customRequireAuth(), createCategory);
-  app.put('/category/:id', customRequireAuth(), updateCategory);
-  app.delete('/category/:id', customRequireAuth(), deleteCategory);
+  app.get('/budget', requireFirebaseAuth(), getAllBudgets);
+  app.post('/budget', requireFirebaseAuth(), createBudget);
+  app.put('/budget/reorder', requireFirebaseAuth(), reorderBudgets);
+  app.put('/budget/:id', requireFirebaseAuth(), updateBudget);
+  app.delete('/budget/:id', requireFirebaseAuth(), deleteBudget);
 
-  // Budget routes
-  app.get('/budget', customRequireAuth(), getAllBudgets);
-  app.post('/budget', customRequireAuth(), createBudget);
-  app.put('/budget/reorder', customRequireAuth(), reorderBudgets);
-  app.put('/budget/:id', customRequireAuth(), updateBudget);
-  app.delete('/budget/:id', customRequireAuth(), deleteBudget);
+  app.get('/expense', requireFirebaseAuth(), getAllExpenses);
+  app.post('/expense', requireFirebaseAuth(), createExpense);
+  app.put('/expense/:id', requireFirebaseAuth(), updateExpense);
+  app.delete('/expense/:id', requireFirebaseAuth(), deleteExpense);
 
-  // Expense routes
-  app.get('/expense', customRequireAuth(), getAllExpenses);
-  app.post('/expense', customRequireAuth(), createExpense);
-  app.put('/expense/:id', customRequireAuth(), updateExpense);
-  app.delete('/expense/:id', customRequireAuth(), deleteExpense);
+  app.get('/income', requireFirebaseAuth(), getAllIncomes);
+  app.post('/income', requireFirebaseAuth(), createIncome);
+  app.put('/income/reorder', requireFirebaseAuth(), reorderIncomes);
+  app.put('/income/:id', requireFirebaseAuth(), updateIncome);
+  app.delete('/income/:id', requireFirebaseAuth(), deleteIncome);
 
-  // Income routes
-  app.get('/income', customRequireAuth(), getAllIncomes);
-  app.post('/income', customRequireAuth(), createIncome);
-  app.put('/income/reorder', customRequireAuth(), reorderIncomes);
-  app.put('/income/:id', customRequireAuth(), updateIncome);
-  app.delete('/income/:id', customRequireAuth(), deleteIncome);
+  app.get('/month', requireFirebaseAuth(), getAllMonths);
+  app.get('/month/:id', requireFirebaseAuth(), getMonthById);
+  app.post('/month', requireFirebaseAuth(), createMonth);
+  app.post('/month/:id/copy', requireFirebaseAuth(), copyMonth);
+  app.put('/month/:id', requireFirebaseAuth(), updateMonth);
+  app.delete('/month/:id', requireFirebaseAuth(), deleteMonth);
 
-  // Month routes
-  app.get('/month', customRequireAuth(), getAllMonths);
-  app.get('/month/:id', customRequireAuth(), getMonthById);
-  app.post('/month', customRequireAuth(), createMonth);
-  app.post('/month/:id/copy', customRequireAuth(), copyMonth);
-  app.put('/month/:id', customRequireAuth(), updateMonth);
-  app.delete('/month/:id', customRequireAuth(), deleteMonth);
+  app.get('/access-token', requireFirebaseAuth(), requireAdmin, getAllAccessTokens);
 
-
-  // --- Admin routes ----------------------
-  // Access tokens routes
-  app.get('/access-token', customRequireAuth(), requireAdmin, getAllAccessTokens);
-
-  // User routes
-  app.get('/user', customRequireAuth(), requireAdmin, getAllUsers);
-  app.post('/user', customRequireAuth(), requireAdmin, createUser);
-  app.put('/user/:id', customRequireAuth(), requireAdmin, updateUser);
-  app.delete('/user/:id', customRequireAuth(), requireAdmin, deleteUser);
+  app.get('/user', requireFirebaseAuth(), requireAdmin, getAllUsers);
+  app.post('/user', requireFirebaseAuth(), requireAdmin, createUser);
+  app.put('/user/:id', requireFirebaseAuth(), requireAdmin, updateUser);
+  app.delete('/user/:id', requireFirebaseAuth(), requireAdmin, deleteUser);
 };
 
 export const initOtherRoutes = (app: Express) => {
-  // Not supported routes
-  app.use('/*', (req, res) => {
-    res.send('Not Found');
-  })
+  app.use('/*', (req: Request, res: Response) => {
+    res.status(404).json({ message: 'Not Found' });
+  });
+};
+
+export const initErrorHandler = (app: Express) => {
+  app.use(errorHandler);
 };

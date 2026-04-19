@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { getQueryTake } from '../helpers/query';
+import { asyncHandler } from '../middleware/errorHandler';
+import * as yearService from '../services/year';
 
-import * as service from '../services/year';
-
-export const getAllYears = async (req: Request, res: Response) => {
-  await service.getAllYears(req, res);
-};
+export const getAllYears = asyncHandler(async (req, res) => {
+  const years = await yearService.getAllYears(getQueryTake(req));
+  res.json(years);
+});

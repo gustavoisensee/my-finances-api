@@ -1,19 +1,25 @@
-import { Request, Response } from 'express';
+import { asyncHandler } from '../middleware/errorHandler';
+import { getQueryTake } from '../helpers/query';
+import * as userService from '../services/user';
 
-import * as service from '../services/user';
+export const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await userService.getAllUsers(getQueryTake(req));
+  res.json(users);
+});
 
-export const getAllUsers = async (req: Request, res: Response) => {
-  await service.getAllUsers(req, res);
-};
+export const createUser = asyncHandler(async (req, res) => {
+  const user = await userService.createUser(req.body.firebaseUid);
+  res.status(201).json(user);
+});
 
-export const createUser = async (req: Request, res: Response) => {
-  await service.createUser(req, res);
-};
+export const updateUser = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  const user = await userService.updateUser(id, req.body.firebaseUid);
+  res.json(user);
+});
 
-export const updateUser = async (req: Request, res: Response) => {
-  await service.updateUser(req, res);
-};
-
-export const deleteUser = async (req: Request, res: Response) => {
-  await service.deleteUser(req, res);
-};
+export const deleteUser = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  const user = await userService.deleteUser(id);
+  res.json(user);
+});
