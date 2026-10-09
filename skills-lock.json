@@ -1,20 +1,23 @@
 {
   "version": 1,
   "skills": {
-    "api-security-best-practices": {
-      "source": "sickn33/antigravity-awesome-skills",
-      "sourceType": "github",
-      "computedHash": "5a088c5b84b75ed44955e7a153b4af20b5a70b6430e86d0f0398b824cc9efb20"
-    },
-    "nodejs-backend-patterns": {
+    "rust-async-patterns": {
       "source": "wshobson/agents",
       "sourceType": "github",
-      "computedHash": "c6a99966c2565acc388e574039127abc770bb9a3338be761e421e16f023f702b"
+      "skillPath": "plugins/systems-programming/skills/rust-async-patterns/SKILL.md",
+      "computedHash": "20d32ef58158c94eb4dfc4aaf19bec7ae2a025ae5d42da7b49ccfbaeda389273"
     },
-    "prisma-client-api": {
-      "source": "prisma/skills",
+    "rust-best-practices": {
+      "source": "apollographql/skills",
       "sourceType": "github",
-      "computedHash": "0434410e48fb796bbdc3ad0050654bfc9cf72c89b30dbad098ee5c9f655b7f85"
+      "skillPath": "skills/rust-best-practices/SKILL.md",
+      "computedHash": "a3db351ec552ed9d36b59e547d6c1d94077867eb5bcb98b3f802dfebb0a8a248"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "e14e276241805c97dbcfe40dcbea1a3035269cc7293cac4b1832dda41a835e60"
     }
   }
 }

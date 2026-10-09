@@ -1,0 +1,3 @@
+[advisories]
+# See deny.toml: `rsa` is dev-only / never compiled into the API binary.
+ignore = ["RUSTSEC-2023-0071"]

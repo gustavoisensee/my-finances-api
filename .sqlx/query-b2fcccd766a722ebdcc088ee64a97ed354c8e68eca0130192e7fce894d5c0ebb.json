@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM \"AccessToken\"",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "b2fcccd766a722ebdcc088ee64a97ed354c8e68eca0130192e7fce894d5c0ebb"
+}

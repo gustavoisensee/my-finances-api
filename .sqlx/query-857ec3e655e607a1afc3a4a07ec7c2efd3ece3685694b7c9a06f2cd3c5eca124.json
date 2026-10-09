@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM \"Budget\"",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "857ec3e655e607a1afc3a4a07ec7c2efd3ece3685694b7c9a06f2cd3c5eca124"
+}

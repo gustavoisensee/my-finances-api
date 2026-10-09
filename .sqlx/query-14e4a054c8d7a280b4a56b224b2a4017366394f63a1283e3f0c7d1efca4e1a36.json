@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM \"Category\" WHERE \"userId\" = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "14e4a054c8d7a280b4a56b224b2a4017366394f63a1283e3f0c7d1efca4e1a36"
+}

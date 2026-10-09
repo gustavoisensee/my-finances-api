@@ -1,0 +1,57 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE \"Expense\" e\n        SET value = $3, description = $4, \"budgetId\" = $5, \"categoryId\" = $6\n        FROM \"Budget\" b JOIN \"Month\" m ON m.id = b.\"monthId\"\n        WHERE e.id = $1 AND b.id = e.\"budgetId\" AND m.\"userId\" = $2\n        RETURNING e.id, e.description, e.value, e.\"createdAt\" AS created_at,\n                  e.\"budgetId\" AS budget_id, e.\"categoryId\" AS category_id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "value",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "budget_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "category_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Float8",
+        "Text",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1c177643b98005b230539c50fd9e1b2c0c3ab9959d1ada0ec405ce9222196561"
+}

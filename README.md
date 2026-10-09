@@ -1,25 +1,25 @@
 # My Finances API
 
-A RESTful API for personal finance management built with Node.js, Express, TypeScript, and Prisma ORM.
+A RESTful API for personal finance management built with Rust, Axum and SQLx, deployed as a single Vercel serverless function.
 
 ## 🚀 Features
 
-- **User Authentication**: Firebase-based authentication for secure user management
-- **Financial Tracking**: 
+- **User Authentication**: Firebase ID tokens verified on every request (RS256 against Google's public keys); users are created automatically on first sign-in
+- **Financial Tracking**:
   - Income management
   - Budget creation and tracking
   - Expense categorization
   - Monthly and yearly financial reports
-- **Multi-user Support**: Each user has their own financial data
-- **PostgreSQL Database**: Powered by Supabase
-- **Type Safety**: Full TypeScript support
-- **Modern Stack**: Latest versions of all dependencies
+- **Multi-user Support**: Each user only ever sees their own financial data
+- **PostgreSQL Database**: Powered by Supabase, queries checked at compile time by SQLx
+- **Serverless**: One Axum router served from a single Vercel function
 
 ## 📋 Prerequisites
 
-- Node.js (v18 or higher recommended)
-- pnpm (v10.17.0 or higher)
-- PostgreSQL database (Supabase account)
+- Rust (stable, edition 2024): `rustup toolchain install stable`
+- `make` (preinstalled on macOS/Linux)
+- PostgreSQL database (Supabase account, or a local Postgres for development)
+- Node.js only for the optional Vercel CLI and agent-skills targets (run through `npx`)
 
 ## 🛠️ Installation
 
@@ -29,67 +29,154 @@ A RESTful API for personal finance management built with Node.js, Express, TypeS
    cd my-finances-api
    ```
 
-2. **Install dependencies**
+2. **Install the tooling** (rustfmt, clippy, sqlx-cli, cargo-deny, cargo-audit, cargo-watch)
+
    ```bash
-   pnpm install
+   make install-tools
    ```
 
 3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory (you can copy from `.env.example`):
+
    ```bash
-   cp .env.example .env
+   make env    # copies .env.example to .env if it doesn't exist
    ```
-   
+
    Update the following variables:
-   - `DATABASE_URL`: Your Supabase connection string (pooled)
-   - `DIRECT_URL`: Your Supabase direct connection string
+   - `DATABASE_URL`: Your Supabase connection string (pooled for runtime, direct for migrations)
    - `FIREBASE_PROJECT_ID`: Your Firebase project ID
-   - `FIREBASE_SERVICE_ACCOUNT_JSON`: (optional) Inline JSON credentials for Firebase Admin SDK
-   - `GOOGLE_APPLICATION_CREDENTIALS`: (optional) Path to service account key file
    - `ADMIN_FIREBASE_UIDS`: (optional) Comma-separated list of Firebase UIDs with admin access
-   - `NODE_PORT`: Port for the server (default: 3001)
+   - `APP_ENV`: (optional) `production` hides internal error details; falls back to `VERCEL_ENV`
+   - `DB_MAX_CONNECTIONS` / `DB_STATEMENT_CACHE_CAPACITY`: (optional) pool tuning
+   - `PORT`: Port for the local server (default: 3001)
 
 4. **Initialize the database**
-   
-   See [DB.md](./DB.md) for detailed database setup instructions.
-   
-   Quick start:
+
    ```bash
-   pnpm run db:generate     # Generate Prisma Client
-   pnpm run db:migrate:dev  # Run migrations
-   pnpm run db:seed         # Seed database with default years and expense categories
+   make db-setup    # create the database (local), apply migrations, seed years 2024–2026 and categories
    ```
-   
-   **Important**: 
+
+   **Important**:
    - Users are automatically created on their first Firebase sign-in
-   - Default years (2024, 2025, 2026) are created during seeding
-   
+   - Seeding is idempotent and can be run repeatedly
+
    **Database Management**:
    ```bash
-   pnpm run db:clean        # Remove all data from database (preserves schema)
-   pnpm run db:seed         # Repopulate with fresh seed data
-   pnpm run db:studio       # Open Prisma Studio to browse/edit data
+   make db-clean    # remove all data (preserves schema; refuses to run in production)
+   make db-seed     # repopulate with fresh seed data
    ```
+
+Steps 2–4 can also be done in one go with `make setup`.
 
 ## 🏃‍♂️ Running the Application
 
 ### Development Mode
 ```bash
-pnpm run dev
+make dev      # or `make watch` to restart on file changes
 ```
-The server will start on `http://localhost:3001` (or your configured port) with hot reload enabled.
+The server will start on `http://localhost:3001` (or your configured `PORT`).
 
-### Production Build
+### Tests
 ```bash
-pnpm run build  # Compile TypeScript
-pnpm start      # Start the production server
+make test
 ```
+Integration tests use `#[sqlx::test]`, which creates an isolated database per test, so `DATABASE_URL` must point at a Postgres server where the user can create databases.
+
+### Lint
+```bash
+make fmt-check lint    # or `make ci` to run everything CI runs
+```
+
+## 🧰 Make Commands
+
+Run `make` (or `make help`) to list every command. All commands read `DATABASE_URL` and the other variables from `.env`; to target a different database for a single command, prefix it, e.g. `DATABASE_URL=<direct-connection-url> make db-migrate`.
+
+**Setup**
+
+| Command | Description |
+| --- | --- |
+| `make setup` | First-time setup: tools, `.env`, database (create + migrate + seed) |
+| `make install-tools` | Install rustfmt, clippy, sqlx-cli, cargo-deny, cargo-audit, cargo-watch |
+| `make env` | Create `.env` from `.env.example` (if missing) |
+
+**Development & build**
+
+| Command | Description |
+| --- | --- |
+| `make dev` | Run the API locally on `PORT` (default 3001) |
+| `make watch` | Run the API and restart on changes |
+| `make run-release` | Run the API locally with the optimized release build |
+| `make docs` | Serve the Swagger UI on http://localhost:3002 (run alongside `make dev`) |
+| `make check` | Type-check all targets |
+| `make build` | Debug build of all targets |
+| `make build-release` | Release build of the Vercel function binary |
+| `make build-offline` | Build without a database using `.sqlx/` (what Vercel and CI do) |
+| `make clean` | Remove build artifacts |
+
+**Quality & tests**
+
+| Command | Description |
+| --- | --- |
+| `make fmt` | Format the code |
+| `make fmt-check` | Check formatting |
+| `make lint` | Run clippy with warnings as errors |
+| `make lint-fix` | Apply clippy's automatic fixes |
+| `make test` | Run all tests |
+| `make test-unit` | Run unit tests only (no database needed) |
+| `make test-integration` | Run integration tests only (`tests/`) |
+| `make test-one T=expense` | Run tests whose name matches `T` |
+
+**Security**
+
+| Command | Description |
+| --- | --- |
+| `make deny` | Check advisories, licenses, bans and sources (cargo-deny) |
+| `make audit` | Check dependencies against the RustSec advisory database |
+| `make security` | Run both dependency checks |
+| `make ci` | Run everything CI runs (fmt-check, lint, test, build-offline, deny) |
+
+**Database**
+
+| Command | Description |
+| --- | --- |
+| `make db-setup` | Create, migrate and seed the database |
+| `make db-create` | Create the database in `DATABASE_URL` |
+| `make db-drop` | Drop the database (asks for confirmation) |
+| `make db-reset` | Drop, recreate, migrate and seed (asks for confirmation) |
+| `make db-migrate` | Apply pending migrations (Supabase: use the direct connection, port 5432) |
+| `make db-revert` | Revert the last migration (reversible migrations only) |
+| `make db-status` | Show applied and pending migrations |
+| `make db-new NAME=add_budget_notes` | Create a new migration file |
+| `make db-seed` | Seed default years and categories (idempotent) |
+| `make db-clean` | Delete all data, keep the schema (refuses in production) |
+| `make sqlx-prepare` | Regenerate `.sqlx/` offline query metadata (commit the result) |
+| `make sqlx-check` | Verify `.sqlx/` is up to date with the queries |
+
+**Vercel** (uses `npx vercel`; override with `VERCEL=vercel` if installed globally)
+
+| Command | Description |
+| --- | --- |
+| `make vercel-link` | Link this directory to a Vercel project |
+| `make vercel-dev` | Run the function locally through the Vercel CLI |
+| `make deploy-preview` | Deploy a preview build |
+| `make deploy-prod` | Deploy to production |
+| `make vercel-logs URL=<deployment-url>` | Show runtime logs for a deployment |
+
+**Agent skills**
+
+| Command | Description |
+| --- | --- |
+| `make skills-list` | List the project's agent skills (`.agents/skills`) |
+| `make skills-update` | Update the agent skills from their `skills-lock.json` sources |
 
 ## 📚 API Endpoints
 
-> **💡 Postman Collection Available!** 
-> Import `postman/My-Finances-API.postman_collection.json` into Postman for easy testing. 
+> **💡 Interactive docs (Swagger UI)**
+> Run `make dev` and, in another terminal, `make docs`, then open [http://localhost:3002](http://localhost:3002).
+> Click **Authorize**, paste a Firebase ID token, and use **Try it out** on any endpoint.
+> The page is `postman/index.html` and the spec is `postman/openapi.json` (OpenAPI 3).
+>
+> **💡 Postman Collection Available!**
+> Import `postman/My-Finances-API.postman_collection.json` into Postman for easy testing.
 > See [postman/POSTMAN_GUIDE.md](./postman/POSTMAN_GUIDE.md) for detailed instructions.
 
 ### Public Endpoints
@@ -109,11 +196,15 @@ All protected endpoints return a **401 Unauthorized** JSON response if no valid 
 
 **Years & Categories**
 - `GET /year` - Get all years (default years: 2024, 2025, 2026 are seeded)
-- `GET /category` - Get all categories (returns user's custom categories + system default categories)
+- `GET /category` - Get all categories (user's custom categories + system default categories, with `expenseCount`)
+- `POST /category` - Create a custom category
+- `PUT /category/:id` - Rename a custom category
+- `DELETE /category/:id` - Delete a custom category (rejected while expenses use it)
 
 **Budgets**
 - `GET /budget` - Get all budgets
 - `POST /budget` - Create a budget
+- `PUT /budget/reorder` - Reorder the budgets of a month
 - `PUT /budget/:id` - Update a budget
 - `DELETE /budget/:id` - Delete a budget
 
@@ -126,16 +217,19 @@ All protected endpoints return a **401 Unauthorized** JSON response if no valid 
 **Income**
 - `GET /income` - Get all incomes
 - `POST /income` - Create an income
+- `PUT /income/reorder` - Reorder the incomes of a month
 - `PUT /income/:id` - Update an income
 - `DELETE /income/:id` - Delete an income
 
 **Months**
-- `GET /month` - Get all months
-- `GET /month/:id` - Get month by ID
+- `GET /month?yearId=` - Get all months of a year (`iIncomes`, `iBudgets`, `iExpenses` include relations)
+- `GET /month/:id` - Get month by ID (404 when missing)
 - `POST /month` - Create a month
 - `POST /month/:id/copy` - Copy a month with its incomes and budgets to a new month/year
 - `PUT /month/:id` - Update a month
 - `DELETE /month/:id` - Delete a month
+
+List endpoints accept `take` (default 10, max 100).
 
 **Admin Endpoints** (Require admin role via Firebase custom claims or UID allowlist)
 - `GET /access-token` - Get all access tokens
@@ -153,67 +247,61 @@ Admin endpoints return a **403 Forbidden** JSON response if the authenticated us
 ```json
 {
   "error": "Forbidden",
-  "message": "Admin access required. This endpoint is restricted to administrators only.",
+  "message": "Admin access required.",
   "code": "ADMIN_ACCESS_REQUIRED"
 }
 ```
 
 ## 🗄️ Database
 
-This project uses Prisma ORM with PostgreSQL (Supabase). For detailed database management instructions, see [DB.md](./DB.md).
+Migrations live in `migrations/` (create one with `make db-new NAME=<name>`) and are applied with `make db-migrate`. The baseline migration is idempotent, so it can be applied to a database previously managed by Prisma without changing existing tables.
 
-## 🔧 Available Scripts
+Queries use SQLx's compile-time checked macros. Builds without a database (Vercel, CI) read the cached query metadata in `.sqlx/` (`SQLX_OFFLINE=true`). After adding or changing a query, regenerate it against a migrated database and commit the result:
 
-- `pnpm dev` - Start development server with hot reload
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm run db:generate` - Generate Prisma Client
-- `pnpm run db:migrate` - Deploy migrations to production
-- `pnpm run db:migrate:dev` - Create and apply migrations in development
-- `pnpm run db:seed` - Seed database with admin user and default data
-- `pnpm run db:clean` - Clean all data from the database
-- `pnpm run db:studio` - Open Prisma Studio to browse database
+```bash
+make sqlx-prepare    # `make sqlx-check` verifies it is up to date
+```
 
 ## 🌐 CORS Configuration
 
 The API allows requests from:
-- `http://localhost:3000` (automatically enabled in development only)
+- `http://localhost:3000` (local web app, outside production only)
+- `http://localhost:3002` (local API docs from `make docs`, outside production only)
 - `https://my-finances-web.gustavoisensee.com` (production frontend)
 
-The localhost origin is automatically added when `NODE_ENV` is not set to `production`. Update the CORS configuration in `src/helpers/routes.ts` to add more origins.
+Update `src/config.rs` to add more origins.
 
 ## 🔒 Security Notes
 
-- Configure Firebase Admin SDK credentials via `FIREBASE_SERVICE_ACCOUNT_JSON` (inline JSON) or `GOOGLE_APPLICATION_CREDENTIALS` (file path)
+- Only `FIREBASE_PROJECT_ID` is needed for token verification; no service-account credentials are stored
+- Tokens must be RS256, signed by a current Google key, with the correct audience, issuer, expiry and auth time
 - Keep your `.env` file secure and never commit it to version control
-- Use HTTPS in production environments
-- Users are automatically created on first sign-in via Firebase ID token verification
+- Responses carry Helmet-equivalent security headers and `Cache-Control: no-store`
+- Request bodies are limited to 1 MB; internal error details are hidden in production
 - All protected endpoints require a valid Firebase ID token in the `Authorization: Bearer <token>` header
 - Admin access is controlled via Firebase custom claims (`admin: true` or `role: 'admin'`) or the `ADMIN_FIREBASE_UIDS` env var
+- CI runs `cargo-deny` (advisories, licenses, sources), Gitleaks and CodeQL
 
 ## 📦 Technology Stack
 
-- **Runtime**: Node.js
-- **Language**: TypeScript
-- **Framework**: Express.js
-- **ORM**: Prisma
-- **Database**: PostgreSQL (Supabase)
-- **Authentication**: Firebase Admin SDK
-- **Package Manager**: pnpm
+- **Language**: Rust
+- **Framework**: Axum (on `vercel_runtime`)
+- **Database access**: SQLx (PostgreSQL / Supabase)
+- **Authentication**: Firebase ID tokens via `jsonwebtoken`
+- **Hosting**: Vercel serverless functions
 
 ## 🚀 Deployment
 
-### Render.com
+### Vercel
 
-This project is configured for deployment on Render.com. The build command installs dependencies and compiles TypeScript.
+`vercel.json` routes every path to the single function in `api/main.rs`, which serves the whole Axum router.
 
-**Keep-alive script** (prevents Render free tier from sleeping):
-```bash
-# Run this in a separate terminal or use a cron job
-# 60 * 14 = 840 (60s, 14min, 840s)
-# render.com spins down after 15min of inactivity
-while true; do curl "https://your-app-name.onrender.com/"; sleep 840; done;
-```
+1. Link the project: `make vercel-link`
+2. Set the environment variables (`DATABASE_URL` with the pooled connection, `FIREBASE_PROJECT_ID`, optionally `ADMIN_FIREBASE_UIDS`) in the Vercel dashboard or with `npx vercel env add`
+3. Run migrations against the direct connection before deploying schema changes: `DATABASE_URL=<direct-connection-url> make db-migrate`
+4. Deploy: `make deploy-preview` or `make deploy-prod`
+
+Consider setting the function region close to the Supabase database region to minimise latency.
 
 ## 📄 License
 

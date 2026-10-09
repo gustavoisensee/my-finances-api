@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO \"Expense\" (value, description, \"createdAt\", \"budgetId\", \"categoryId\")\n        VALUES ($1, $2, $3, $4, $5)\n        RETURNING id, description, value, \"createdAt\" AS created_at,\n                  \"budgetId\" AS budget_id, \"categoryId\" AS category_id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "value",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "budget_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "category_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Text",
+        "Timestamp",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "55a43092de3bea408da7a1b09da38b61fee866f708ff303345f459a4c405e305"
+}

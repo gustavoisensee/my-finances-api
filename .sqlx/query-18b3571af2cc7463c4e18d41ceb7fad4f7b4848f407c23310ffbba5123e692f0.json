@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO \"Category\" (name, \"userId\", \"createdAt\")\n            SELECT $1, NULL, $2\n            WHERE NOT EXISTS (SELECT 1 FROM \"Category\" WHERE name = $1 AND \"userId\" IS NULL)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "18b3571af2cc7463c4e18d41ceb7fad4f7b4848f407c23310ffbba5123e692f0"
+}

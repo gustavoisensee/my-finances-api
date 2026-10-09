@@ -1,0 +1,2058 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "My Finances API",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT"
+    },
+    "description": "Personal finance API (Rust / Axum on Vercel). Click **Authorize** and paste a Firebase ID token (without `Bearer `)."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local (make dev)"
+    }
+  ],
+  "security": [
+    {
+      "firebase": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Public",
+      "description": "No authentication required"
+    },
+    {
+      "name": "Years",
+      "description": "Years seeded by `make db-seed`"
+    },
+    {
+      "name": "Categories",
+      "description": "Global categories plus the user's own"
+    },
+    {
+      "name": "Months",
+      "description": "Months with optional incomes, budgets and expenses"
+    },
+    {
+      "name": "Budgets",
+      "description": "Budgets of a month, ordered by index"
+    },
+    {
+      "name": "Incomes",
+      "description": "Incomes of a month, ordered by index"
+    },
+    {
+      "name": "Expenses",
+      "description": "Expenses of a budget"
+    },
+    {
+      "name": "Admin",
+      "description": "Requires the admin/role claim or a UID in ADMIN_FIREBASE_UIDS"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "API index",
+        "responses": {
+          "200": {
+            "description": "Index",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "example": "Index"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "operationId": "getIndex"
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "example": "Ok"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "operationId": "getStatus"
+      }
+    },
+    "/year": {
+      "get": {
+        "tags": [
+          "Years"
+        ],
+        "summary": "List years",
+        "responses": {
+          "200": {
+            "description": "Years",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Year"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listYear"
+      }
+    },
+    "/category": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "List global and own categories",
+        "responses": {
+          "200": {
+            "description": "Categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listCategory"
+      },
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Create a custom category",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "name": "Pets"
+              }
+            }
+          }
+        },
+        "operationId": "createCategory"
+      }
+    },
+    "/category/{id}": {
+      "put": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Rename a custom category",
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "name": "Pets & Vet"
+              }
+            }
+          }
+        },
+        "operationId": "updateCategoryById"
+      },
+      "delete": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Delete a custom category",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "Rejected with 400 while expenses still use the category.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "operationId": "deleteCategoryById"
+      }
+    },
+    "/month": {
+      "get": {
+        "tags": [
+          "Months"
+        ],
+        "summary": "List months of a year",
+        "responses": {
+          "200": {
+            "description": "Months",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MonthWithRelations"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "parameters": [
+          {
+            "name": "yearId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "iIncomes",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include incomes"
+          },
+          {
+            "name": "iBudgets",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include budgets"
+          },
+          {
+            "name": "iExpenses",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include each budget's expenses (requires iBudgets)"
+          },
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listMonth"
+      },
+      "post": {
+        "tags": [
+          "Months"
+        ],
+        "summary": "Create a month",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Month"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "description",
+                  "createdAt",
+                  "yearId"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 1,
+                    "maximum": 12
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-01-01T00:00:00.000Z"
+                  },
+                  "yearId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "value": 1,
+                "description": "January 2025",
+                "createdAt": "2025-01-01T00:00:00.000Z",
+                "yearId": 1
+              }
+            }
+          }
+        },
+        "operationId": "createMonth"
+      }
+    },
+    "/month/{id}": {
+      "get": {
+        "tags": [
+          "Months"
+        ],
+        "summary": "Get a month",
+        "responses": {
+          "200": {
+            "description": "Month",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthWithRelations"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          },
+          {
+            "name": "iIncomes",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include incomes"
+          },
+          {
+            "name": "iBudgets",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include budgets"
+          },
+          {
+            "name": "iExpenses",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include each budget's expenses (requires iBudgets)"
+          }
+        ],
+        "operationId": "getMonthById"
+      },
+      "put": {
+        "tags": [
+          "Months"
+        ],
+        "summary": "Update a month",
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Month"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "description and yearId are optional; omitted fields are left unchanged.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 1,
+                    "maximum": 12
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "yearId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "value": 1,
+                "description": "January 2025 - Updated",
+                "yearId": 1
+              }
+            }
+          }
+        },
+        "operationId": "updateMonthById"
+      },
+      "delete": {
+        "tags": [
+          "Months"
+        ],
+        "summary": "Delete a month (with its incomes, budgets and expenses)",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Month"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "operationId": "deleteMonthById"
+      }
+    },
+    "/month/{id}/copy": {
+      "post": {
+        "tags": [
+          "Months"
+        ],
+        "summary": "Copy a month with its incomes and budgets",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthWithRelations"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "Expenses are not copied.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "yearId"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 1,
+                    "maximum": 12
+                  },
+                  "yearId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "value": 2,
+                "yearId": 1
+              }
+            }
+          }
+        },
+        "operationId": "copyMonth"
+      }
+    },
+    "/budget": {
+      "get": {
+        "tags": [
+          "Budgets"
+        ],
+        "summary": "List budgets",
+        "responses": {
+          "200": {
+            "description": "Budgets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Budget"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listBudget"
+      },
+      "post": {
+        "tags": [
+          "Budgets"
+        ],
+        "summary": "Create a budget",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Budget"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "description",
+                  "value",
+                  "createdAt",
+                  "monthId"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "color": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-01-01T00:00:00.000Z"
+                  },
+                  "monthId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "description": "Groceries Budget",
+                "value": 500.0,
+                "color": "#4CAF50",
+                "createdAt": "2025-01-01T00:00:00.000Z",
+                "monthId": 1
+              }
+            }
+          }
+        },
+        "operationId": "createBudget"
+      }
+    },
+    "/budget/reorder": {
+      "put": {
+        "tags": [
+          "Budgets"
+        ],
+        "summary": "Reorder a month's budgets",
+        "responses": {
+          "200": {
+            "description": "Budgets in the new order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Budget"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "budgetIds must list exactly the month's budgets.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "monthId",
+                  "budgetIds"
+                ],
+                "properties": {
+                  "monthId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "budgetIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "monthId": 1,
+                "budgetIds": [
+                  3,
+                  1,
+                  2
+                ]
+              }
+            }
+          }
+        },
+        "operationId": "reorderBudget"
+      }
+    },
+    "/budget/{id}": {
+      "put": {
+        "tags": [
+          "Budgets"
+        ],
+        "summary": "Update a budget",
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Budget"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "Moving to another month appends it there. Omit color to keep it, send null to clear it.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "description",
+                  "value",
+                  "monthId"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "color": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "monthId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "description": "Groceries Budget - Updated",
+                "value": 600.0,
+                "monthId": 1
+              }
+            }
+          }
+        },
+        "operationId": "updateBudgetById"
+      },
+      "delete": {
+        "tags": [
+          "Budgets"
+        ],
+        "summary": "Delete a budget (and its expenses)",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Budget"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "operationId": "deleteBudgetById"
+      }
+    },
+    "/expense": {
+      "get": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "List expenses",
+        "responses": {
+          "200": {
+            "description": "Expenses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Expense"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listExpense"
+      },
+      "post": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Create an expense",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "description",
+                  "value",
+                  "createdAt",
+                  "budgetId",
+                  "categoryId"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-01-01T00:00:00.000Z"
+                  },
+                  "budgetId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "categoryId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "description": "Supermarket Shopping",
+                "value": 85.5,
+                "createdAt": "2025-01-15T10:30:00.000Z",
+                "budgetId": 1,
+                "categoryId": 1
+              }
+            }
+          }
+        },
+        "operationId": "createExpense"
+      }
+    },
+    "/expense/{id}": {
+      "put": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Update an expense",
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "description",
+                  "value",
+                  "budgetId",
+                  "categoryId"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "budgetId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "categoryId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "description": "Supermarket Shopping - Updated",
+                "value": 92.75,
+                "budgetId": 1,
+                "categoryId": 1
+              }
+            }
+          }
+        },
+        "operationId": "updateExpenseById"
+      },
+      "delete": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Delete an expense",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "operationId": "deleteExpenseById"
+      }
+    },
+    "/income": {
+      "get": {
+        "tags": [
+          "Incomes"
+        ],
+        "summary": "List incomes",
+        "responses": {
+          "200": {
+            "description": "Incomes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Income"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listIncome"
+      },
+      "post": {
+        "tags": [
+          "Incomes"
+        ],
+        "summary": "Create an income",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Income"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "createdAt",
+                  "monthId"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-01-01T00:00:00.000Z"
+                  },
+                  "monthId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "description": "Monthly Salary",
+                "value": 5000.0,
+                "createdAt": "2025-01-01T00:00:00.000Z",
+                "monthId": 1
+              }
+            }
+          }
+        },
+        "operationId": "createIncome"
+      }
+    },
+    "/income/reorder": {
+      "put": {
+        "tags": [
+          "Incomes"
+        ],
+        "summary": "Reorder a month's incomes",
+        "responses": {
+          "200": {
+            "description": "Incomes in the new order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Income"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "incomeIds must list exactly the month's incomes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "monthId",
+                  "incomeIds"
+                ],
+                "properties": {
+                  "monthId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "incomeIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "monthId": 1,
+                "incomeIds": [
+                  2,
+                  1
+                ]
+              }
+            }
+          }
+        },
+        "operationId": "reorderIncome"
+      }
+    },
+    "/income/{id}": {
+      "put": {
+        "tags": [
+          "Incomes"
+        ],
+        "summary": "Update an income",
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Income"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "description": "Moving to another month appends it there. Omit description to keep it, send null to clear it.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "monthId"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "monthId": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "example": {
+                "description": "Monthly Salary + Bonus",
+                "value": 5500.0,
+                "monthId": 1
+              }
+            }
+          }
+        },
+        "operationId": "updateIncomeById"
+      },
+      "delete": {
+        "tags": [
+          "Incomes"
+        ],
+        "summary": "Delete an income",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Income"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "operationId": "deleteIncomeById"
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "List users",
+        "responses": {
+          "200": {
+            "description": "Users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listUser"
+      },
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create a user",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "firebaseUid"
+                ],
+                "properties": {
+                  "firebaseUid": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "firebaseUid": "firebase-uid-here"
+              }
+            }
+          }
+        },
+        "operationId": "createUser"
+      }
+    },
+    "/user/{id}": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Update a user's firebaseUid",
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "firebaseUid"
+                ],
+                "properties": {
+                  "firebaseUid": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "firebaseUid": "new-firebase-uid-here"
+              }
+            }
+          }
+        },
+        "operationId": "updateUserById"
+      },
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Delete a user and all their data",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Id"
+          }
+        ],
+        "operationId": "deleteUserById"
+      }
+    },
+    "/access-token": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "List access tokens",
+        "responses": {
+          "200": {
+            "description": "Access tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccessToken"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Take"
+          }
+        ],
+        "operationId": "listAccessToken"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "firebase": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Firebase ID token. Admin routes need the admin/role claim or a UID in ADMIN_FIREBASE_UIDS."
+      }
+    },
+    "parameters": {
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "Take": {
+        "name": "take",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100
+        },
+        "description": "Number of records to return"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "example": {
+              "message": "Value must be a number and greater than 0."
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not found or owned by another user",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "example": {
+              "message": "Month not found."
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AuthError"
+            },
+            "example": {
+              "error": "Unauthorized",
+              "message": "Authentication required. Please provide a valid Firebase ID token.",
+              "code": "UNAUTHENTICATED"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Not an admin",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AuthError"
+            },
+            "example": {
+              "error": "Forbidden",
+              "message": "Admin access required.",
+              "code": "ADMIN_ACCESS_REQUIRED"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Message": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "AuthError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "message",
+          "code"
+        ]
+      },
+      "Year": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "null for global (system) categories"
+          },
+          "expenseCount": {
+            "type": "integer",
+            "description": "Number of the current user's expenses in this category"
+          }
+        }
+      },
+      "Month": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "value": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "description": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "yearId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "MonthWithRelations": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Month"
+          },
+          {
+            "type": "object",
+            "description": "incomes/budgets are only present when requested with iIncomes/iBudgets",
+            "properties": {
+              "incomes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                }
+              },
+              "budgets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/BudgetWithExpenses"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Budget": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "index": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "monthId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "BudgetWithExpenses": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Budget"
+          },
+          {
+            "type": "object",
+            "description": "expenses is only present when requested with iExpenses",
+            "properties": {
+              "expenses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Income": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "index": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "monthId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Expense": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "budgetId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "categoryId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "firebaseUid": {
+            "type": "string",
+            "nullable": true
+          },
+          "clerkId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          }
+        }
+      },
+      "AccessToken": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "expirationDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T00:00:00.000Z"
+          }
+        }
+      },
+      "DeleteResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

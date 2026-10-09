@@ -1,7 +1,8 @@
-node_modules
+# Rust build output
+/target
 # Keep environment variables out of version control
 .env
 .env.local
-dist/
+.vercel
 firebase/
 .DS_Store

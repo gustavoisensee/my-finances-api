@@ -29,17 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v6
+      - name: Audit advisories, licenses and sources (cargo-deny)
+        uses: EmbarkStudios/cargo-deny-action@v2
         with:
-          node-version: 22
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Audit dependencies for vulnerabilities
-        run: pnpm audit --prod
+          command: check advisories licenses bans sources
 
   codeql:
     name: CodeQL Analysis
@@ -52,7 +45,8 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: javascript-typescript
+          languages: rust
+          build-mode: none
 
       - name: Run CodeQL analysis
         uses: github/codeql-action/analyze@v4
