@@ -206,6 +206,48 @@ async fn month_includes_are_conditional(pool: PgPool) {
 }
 
 #[sqlx::test]
+async fn month_list_with_take_returns_every_month_of_the_year(pool: PgPool) {
+    let seed = seed(&pool).await;
+    let alice = Client::new(&app(pool), "alice");
+
+    // Same sequence as the dashboard: January to September, a copy of
+    // September, then three copies of October. That is more than the default
+    // page size of 10, so the dashboard asks for `take=100` to get all of them.
+    let mut expected = Vec::new();
+    for value in 1..=9 {
+        expected.push(create_month(&alice, seed.year_2026, value).await);
+    }
+    let september = expected[8];
+    let res = alice
+        .post(
+            &format!("/month/{september}/copy"),
+            json!({ "value": 10, "yearId": seed.year_2026 }),
+        )
+        .await;
+    assert_eq!(res.status, StatusCode::CREATED);
+    expected.push(id(&res.body));
+
+    let october = expected[9];
+    for _ in 0..3 {
+        let res = alice
+            .post(
+                &format!("/month/{october}/copy"),
+                json!({ "value": 11, "yearId": seed.year_2026 }),
+            )
+            .await;
+        assert_eq!(res.status, StatusCode::CREATED);
+        assert_eq!(res.body["description"], "Copy from October 2026");
+        expected.push(id(&res.body));
+    }
+
+    let res = alice
+        .get(&format!("/month?yearId={}&take=100", seed.year_2026))
+        .await;
+    assert_eq!(res.status, StatusCode::OK);
+    assert_eq!(ids(&res.body), expected);
+}
+
+#[sqlx::test]
 async fn month_copy(pool: PgPool) {
     let seed = seed(&pool).await;
     let alice = Client::new(&app(pool), "alice");
