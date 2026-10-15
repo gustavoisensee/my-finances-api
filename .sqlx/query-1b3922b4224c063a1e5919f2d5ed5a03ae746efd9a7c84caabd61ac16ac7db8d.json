@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO \"Income\" (description, value, index, \"createdAt\", \"monthId\")\n        VALUES ($1, $2, $3, $4, $5)\n        RETURNING id, description, value, index, \"createdAt\" AS created_at, \"monthId\" AS month_id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "value",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "index",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 5,
+        "name": "month_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Float8",
+        "Int4",
+        "Timestamp",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1b3922b4224c063a1e5919f2d5ed5a03ae746efd9a7c84caabd61ac16ac7db8d"
+}

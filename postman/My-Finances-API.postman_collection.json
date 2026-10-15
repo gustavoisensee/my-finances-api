@@ -2,62 +2,10 @@
 	"info": {
 		"_postman_id": "my-finances-api-collection",
 		"name": "My Finances API",
-		"description": "Complete API collection for My Finances API with sample requests and responses.",
+		"description": "API collection for My Finances API (Rust / Axum on Vercel). Protected endpoints require a Firebase ID token.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
-		{
-			"name": "Webhooks",
-			"item": [
-				{
-					"name": "Clerk Webhook",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "svix-id",
-								"value": "msg_xxxxx",
-								"type": "text",
-								"description": "Webhook message ID (from Clerk)"
-							},
-							{
-								"key": "svix-timestamp",
-								"value": "1234567890",
-								"type": "text",
-								"description": "Webhook timestamp (from Clerk)"
-							},
-							{
-								"key": "svix-signature",
-								"value": "v1,xxxxx",
-								"type": "text",
-								"description": "Webhook signature (from Clerk)"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"type\": \"user.created\",\n  \"data\": {\n    \"id\": \"user_2abc123def456\",\n    \"email_addresses\": [\n      {\n        \"id\": \"idn_xxx\",\n        \"email_address\": \"user@example.com\"\n      }\n    ],\n    \"primary_email_address_id\": \"idn_xxx\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n  }\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/webhooks/clerk",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"webhooks",
-								"clerk"
-							]
-						},
-						"description": "Clerk webhook endpoint for automatic user sync. This is called by Clerk servers (not meant for manual testing). Events: user.created, user.updated, user.deleted, session.created"
-					},
-					"response": []
-				}
-			],
-			"description": "Webhook endpoints (server-to-server, not for manual testing)"
-		},
 		{
 			"name": "Public",
 			"item": [
@@ -101,7 +49,7 @@
 			"description": "Public endpoints that don't require authentication"
 		},
 		{
-			"name": "Years & Categories",
+			"name": "Years",
 			"item": [
 				{
 					"name": "Get All Years",
@@ -109,9 +57,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -126,23 +75,30 @@
 								{
 									"key": "take",
 									"value": "10",
-									"description": "Number of records to return (default: 10)"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all years (requires authentication). Note: Create years via Prisma Studio - no POST endpoint available."
+						"description": "Get all years. Years are created by the seed (`cargo run --bin seed`)."
 					},
 					"response": []
-				},
+				}
+			],
+			"description": "Year endpoints (require authentication)"
+		},
+		{
+			"name": "Categories",
+			"item": [
 				{
 					"name": "Get All Categories",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -157,16 +113,119 @@
 								{
 									"key": "take",
 									"value": "20",
-									"description": "Number of records to return (default: 10)"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all categories (requires authentication). Returns system default categories (userId: null) plus user's custom categories. System categories are seeded during database initialization."
+						"description": "Get the system default categories plus the user's custom categories, each with `expenseCount` (the user's expenses only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pets\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/category",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"category"
+							]
+						},
+						"description": "Create a custom category. The name is trimmed and must be unique among the user's and global categories."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pets & Vet\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/category/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"category",
+								"1"
+							]
+						},
+						"description": "Rename one of the user's custom categories."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/category/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"category",
+								"1"
+							]
+						},
+						"description": "Delete one of the user's custom categories. Rejected with 400 while expenses still use it."
 					},
 					"response": []
 				}
 			],
-			"description": "Year and Category endpoints (require authentication)"
+			"description": "Category endpoints (require authentication). Global categories (userId: null) are read-only."
 		},
 		{
 			"name": "Months",
@@ -174,15 +233,13 @@
 				{
 					"name": "Get All Months",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -202,26 +259,26 @@
 								{
 									"key": "iIncomes",
 									"value": "true",
-									"description": "Include incomes (true/false)"
+									"description": "Include incomes"
 								},
 								{
 									"key": "iBudgets",
 									"value": "true",
-									"description": "Include budgets (true/false)"
+									"description": "Include budgets"
 								},
 								{
 									"key": "iExpenses",
 									"value": "true",
-									"description": "Include expenses (true/false)"
+									"description": "Include budget expenses (requires iBudgets)"
 								},
 								{
 									"key": "take",
 									"value": "10",
-									"description": "Number of records to return"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all months for a specific year with optional includes"
+						"description": "Get the user's months for a year. `yearId` is required."
 					},
 					"response": []
 				},
@@ -231,9 +288,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -249,21 +307,21 @@
 								{
 									"key": "iIncomes",
 									"value": "true",
-									"description": "Include incomes (true/false)"
+									"description": "Include incomes"
 								},
 								{
 									"key": "iBudgets",
 									"value": "true",
-									"description": "Include budgets (true/false)"
+									"description": "Include budgets"
 								},
 								{
 									"key": "iExpenses",
 									"value": "true",
-									"description": "Include expenses (true/false)"
+									"description": "Include budget expenses (requires iBudgets)"
 								}
 							]
 						},
-						"description": "Get a specific month by ID with optional includes"
+						"description": "Get a month by ID. Returns 404 when it doesn't exist or belongs to another user."
 					},
 					"response": []
 				},
@@ -277,14 +335,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"value\": 1,\n  \"description\": \"January 2025\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"yearId\": 1\n}"
+							"raw": "{\n  \"value\": 1,\n  \"description\": \"January 2025\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"yearId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/month",
@@ -295,7 +359,7 @@
 								"month"
 							]
 						},
-						"description": "Create a new month (value must be 1-12)"
+						"description": "Create a month. `value` is the month number (1-12)."
 					},
 					"response": []
 				},
@@ -309,14 +373,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"value\": 2,\n  \"yearId\": 1\n}"
+							"raw": "{\n  \"value\": 2,\n  \"yearId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/month/1/copy",
@@ -329,7 +399,7 @@
 								"copy"
 							]
 						},
-						"description": "Copy a month with its incomes and budgets to a new month/year. Expenses are not copied. The description is automatically generated (e.g., 'Copy from January 2025')."
+						"description": "Copy a month with its incomes and budgets (not expenses) into a new month/year."
 					},
 					"response": []
 				},
@@ -343,14 +413,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"value\": 1,\n  \"description\": \"January 2025 - Updated\",\n  \"yearId\": 1\n}"
+							"raw": "{\n  \"value\": 1,\n  \"description\": \"January 2025 - Updated\",\n  \"yearId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/month/1",
@@ -362,7 +438,7 @@
 								"1"
 							]
 						},
-						"description": "Update an existing month"
+						"description": "Update a month. `description` and `yearId` are optional."
 					},
 					"response": []
 				},
@@ -372,9 +448,10 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -387,12 +464,12 @@
 								"1"
 							]
 						},
-						"description": "Delete a month (cascades to incomes and budgets)"
+						"description": "Delete a month with its incomes, budgets and expenses."
 					},
 					"response": []
 				}
 			],
-			"description": "Endpoints for managing months (requires authentication)"
+			"description": "Month endpoints (require authentication)"
 		},
 		{
 			"name": "Budgets",
@@ -403,9 +480,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -420,11 +498,11 @@
 								{
 									"key": "take",
 									"value": "10",
-									"description": "Number of records to return"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all budgets for the authenticated user"
+						"description": "Get the user's budgets, ordered by index."
 					},
 					"response": []
 				},
@@ -438,14 +516,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"description\": \"Groceries Budget\",\n  \"value\": 500.00,\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"monthId\": 1\n}"
+							"raw": "{\n  \"description\": \"Groceries Budget\",\n  \"value\": 500.0,\n  \"color\": \"#4CAF50\",\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"monthId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/budget",
@@ -456,7 +540,46 @@
 								"budget"
 							]
 						},
-						"description": "Create a new budget (description min 3 chars, value > 0)"
+						"description": "Create a budget at the end of the month's list. `color` is optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Reorder Budgets",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"monthId\": 1,\n  \"budgetIds\": [\n    3,\n    1,\n    2\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/budget/reorder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"budget",
+								"reorder"
+							]
+						},
+						"description": "Set the order of all budgets in a month. `budgetIds` must list exactly the month's budgets."
 					},
 					"response": []
 				},
@@ -470,14 +593,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"description\": \"Groceries Budget - Updated\",\n  \"value\": 600.00,\n  \"monthId\": 1\n}"
+							"raw": "{\n  \"description\": \"Groceries Budget - Updated\",\n  \"value\": 600.0,\n  \"monthId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/budget/1",
@@ -489,7 +618,7 @@
 								"1"
 							]
 						},
-						"description": "Update an existing budget"
+						"description": "Update a budget. Moving it to another month appends it there and reindexes the source month. Send `color: null` to clear the color."
 					},
 					"response": []
 				},
@@ -499,9 +628,10 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -514,12 +644,12 @@
 								"1"
 							]
 						},
-						"description": "Delete a budget (cascades to expenses)"
+						"description": "Delete a budget and its expenses, then reindex the month."
 					},
 					"response": []
 				}
 			],
-			"description": "Endpoints for managing budgets (requires authentication)"
+			"description": "Budget endpoints (require authentication)"
 		},
 		{
 			"name": "Expenses",
@@ -530,9 +660,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -547,11 +678,11 @@
 								{
 									"key": "take",
 									"value": "20",
-									"description": "Number of records to return"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all expenses for the authenticated user"
+						"description": "Get the user's expenses."
 					},
 					"response": []
 				},
@@ -565,14 +696,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"description\": \"Supermarket Shopping\",\n  \"value\": 85.50,\n  \"createdAt\": \"2025-01-15T10:30:00.000Z\",\n  \"budgetId\": 1,\n  \"categoryId\": 1\n}"
+							"raw": "{\n  \"description\": \"Supermarket Shopping\",\n  \"value\": 85.5,\n  \"createdAt\": \"2025-01-15T10:30:00.000Z\",\n  \"budgetId\": 1,\n  \"categoryId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/expense",
@@ -583,7 +720,7 @@
 								"expense"
 							]
 						},
-						"description": "Create a new expense (description min 3 chars, value > 0)"
+						"description": "Create an expense. The budget must belong to the user; the category must be the user's or global."
 					},
 					"response": []
 				},
@@ -597,14 +734,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"description\": \"Supermarket Shopping - Updated\",\n  \"value\": 92.75,\n  \"budgetId\": 1,\n  \"categoryId\": 1\n}"
+							"raw": "{\n  \"description\": \"Supermarket Shopping - Updated\",\n  \"value\": 92.75,\n  \"budgetId\": 1,\n  \"categoryId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/expense/1",
@@ -616,7 +759,7 @@
 								"1"
 							]
 						},
-						"description": "Update an existing expense"
+						"description": "Update an expense."
 					},
 					"response": []
 				},
@@ -626,9 +769,10 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -641,12 +785,12 @@
 								"1"
 							]
 						},
-						"description": "Delete an expense"
+						"description": "Delete an expense."
 					},
 					"response": []
 				}
 			],
-			"description": "Endpoints for managing expenses (requires authentication)"
+			"description": "Expense endpoints (require authentication)"
 		},
 		{
 			"name": "Incomes",
@@ -657,9 +801,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -674,11 +819,11 @@
 								{
 									"key": "take",
 									"value": "10",
-									"description": "Number of records to return"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all incomes for the authenticated user"
+						"description": "Get the user's incomes, ordered by index."
 					},
 					"response": []
 				},
@@ -692,14 +837,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"description\": \"Monthly Salary\",\n  \"value\": 5000.00,\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"monthId\": 1\n}"
+							"raw": "{\n  \"description\": \"Monthly Salary\",\n  \"value\": 5000.0,\n  \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n  \"monthId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/income",
@@ -710,7 +861,46 @@
 								"income"
 							]
 						},
-						"description": "Create a new income (value > 0)"
+						"description": "Create an income at the end of the month's list. `description` is optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Reorder Incomes",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"monthId\": 1,\n  \"incomeIds\": [\n    2,\n    1\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/income/reorder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"income",
+								"reorder"
+							]
+						},
+						"description": "Set the order of all incomes in a month. `incomeIds` must list exactly the month's incomes."
 					},
 					"response": []
 				},
@@ -724,14 +914,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"description\": \"Monthly Salary + Bonus\",\n  \"value\": 5500.00,\n  \"monthId\": 1\n}"
+							"raw": "{\n  \"description\": \"Monthly Salary + Bonus\",\n  \"value\": 5500.0,\n  \"monthId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/income/1",
@@ -743,7 +939,7 @@
 								"1"
 							]
 						},
-						"description": "Update an existing income"
+						"description": "Update an income. Moving it to another month appends it there and reindexes the source month."
 					},
 					"response": []
 				},
@@ -753,9 +949,10 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
-								"type": "text"
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text",
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -768,12 +965,12 @@
 								"1"
 							]
 						},
-						"description": "Delete an income"
+						"description": "Delete an income, then reindex the month."
 					},
 					"response": []
 				}
 			],
-			"description": "Endpoints for managing incomes (requires authentication)"
+			"description": "Income endpoints (require authentication)"
 		},
 		{
 			"name": "Admin - Users",
@@ -784,10 +981,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required (Clerk role: admin)"
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -802,11 +999,11 @@
 								{
 									"key": "take",
 									"value": "10",
-									"description": "Number of records to return"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all users (admin only). Returns minimal sync data: id, clerkId, createdAt. To get user profile data (name, email), use Clerk's API with the clerkId."
+						"description": "Get all users (id, firebaseUid, clerkId, createdAt)."
 					},
 					"response": []
 				},
@@ -820,15 +1017,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required (Clerk role: admin)"
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"clerkId\": \"user_2abc123def456\"\n}"
+							"raw": "{\n  \"firebaseUid\": \"firebase-uid-here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/user",
@@ -839,7 +1041,7 @@
 								"user"
 							]
 						},
-						"description": "Create a new user manually (admin only). Users are normally created automatically via Clerk webhooks when they sign up. This endpoint is for manual/admin user creation only. The clerkId must be a valid Clerk user ID."
+						"description": "Create a user manually. Users are normally created automatically on their first authenticated request."
 					},
 					"response": []
 				},
@@ -853,15 +1055,20 @@
 								"value": "application/json"
 							},
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required (Clerk role: admin)"
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"clerkId\": \"user_2xyz789ghi012\"\n}"
+							"raw": "{\n  \"firebaseUid\": \"new-firebase-uid-here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/user/2",
@@ -873,7 +1080,7 @@
 								"2"
 							]
 						},
-						"description": "Update a user's clerkId (admin only). User profile data (name, email, etc.) is managed in Clerk, not in the database."
+						"description": "Update a user's firebaseUid."
 					},
 					"response": []
 				},
@@ -883,10 +1090,10 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required (Clerk role: admin)"
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -899,12 +1106,12 @@
 								"2"
 							]
 						},
-						"description": "Delete a user (admin only). This will cascade delete all user data including months, budgets, expenses, and custom categories."
+						"description": "Delete a user and all their data (months, incomes, budgets, expenses and custom categories)."
 					},
 					"response": []
 				}
 			],
-			"description": "Admin-only endpoints for managing users. Requires Clerk admin role ('admin' or 'org:admin'). User profile data is stored in Clerk - database only stores sync data (id, clerkId, createdAt)."
+			"description": "Admin-only endpoints. Requires the Firebase custom claim `admin: true` or `role: 'admin'`, or a UID listed in ADMIN_FIREBASE_UIDS."
 		},
 		{
 			"name": "Admin - Access Tokens",
@@ -915,10 +1122,10 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "authorization",
-								"value": "{{auth_token}}",
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
 								"type": "text",
-								"description": "Admin user token required"
+								"description": "Firebase ID token (set auth_token to the raw token, without 'Bearer ')"
 							}
 						],
 						"url": {
@@ -933,36 +1140,16 @@
 								{
 									"key": "take",
 									"value": "10",
-									"description": "Number of records to return"
+									"description": "Number of records to return (default 10, max 100)"
 								}
 							]
 						},
-						"description": "Get all access tokens (admin only)"
+						"description": "Get all access tokens (admin only)."
 					},
 					"response": []
 				}
 			],
-			"description": "Admin-only endpoints for managing access tokens"
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
+			"description": "Admin-only endpoints for access tokens"
 		}
 	],
 	"variable": [
@@ -975,12 +1162,6 @@
 			"key": "auth_token",
 			"value": "",
 			"type": "string"
-		},
-		{
-			"key": "user_id",
-			"value": "",
-			"type": "string"
 		}
 	]
 }
-

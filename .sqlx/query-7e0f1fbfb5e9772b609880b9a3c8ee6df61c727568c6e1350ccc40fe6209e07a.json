@@ -1,0 +1,63 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO \"Budget\" (description, value, color, index, \"createdAt\", \"monthId\")\n        VALUES ($1, $2, $3, $4, $5, $6)\n        RETURNING id, description, value, color, index, \"createdAt\" AS created_at, \"monthId\" AS month_id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "value",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "color",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "index",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 6,
+        "name": "month_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Float8",
+        "Text",
+        "Int4",
+        "Timestamp",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "7e0f1fbfb5e9772b609880b9a3c8ee6df61c727568c6e1350ccc40fe6209e07a"
+}

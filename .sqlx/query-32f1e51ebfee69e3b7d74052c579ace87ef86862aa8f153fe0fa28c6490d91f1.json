@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT EXISTS (\n            SELECT 1 FROM \"Budget\" b JOIN \"Month\" m ON m.id = b.\"monthId\"\n            WHERE b.id = $1 AND m.\"userId\" = $2\n        ) AS \"exists!\"\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "32f1e51ebfee69e3b7d74052c579ace87ef86862aa8f153fe0fa28c6490d91f1"
+}

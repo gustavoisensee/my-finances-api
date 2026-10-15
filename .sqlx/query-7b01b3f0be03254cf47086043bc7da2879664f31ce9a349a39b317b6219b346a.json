@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT i.id, i.description, i.value, i.index,\n               i.\"createdAt\" AS created_at, i.\"monthId\" AS month_id\n        FROM \"Income\" i JOIN \"Month\" m ON m.id = i.\"monthId\"\n        WHERE i.id = $1 AND m.\"userId\" = $2\n        FOR UPDATE OF i\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "value",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "index",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 5,
+        "name": "month_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "7b01b3f0be03254cf47086043bc7da2879664f31ce9a349a39b317b6219b346a"
+}

@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT i.\"monthId\" FROM \"Income\" i JOIN \"Month\" m ON m.id = i.\"monthId\"\n        WHERE i.id = $1 AND m.\"userId\" = $2\n        FOR UPDATE OF i\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "monthId",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "36701c16cb11e36e81c9d57bd9123c236d6882eac2ec03b72adfaee4107aa547"
+}

@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO \"User\" (\"firebaseUid\", \"createdAt\")\n        VALUES ($1, $2)\n        RETURNING id, \"firebaseUid\" AS firebase_uid, \"clerkId\" AS clerk_id, \"createdAt\" AS created_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "firebase_uid",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "clerk_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "8cfb7b486504e7b44b3b422deda1c50c4cb01051dba58f2bbd93f8b53709489c"
+}

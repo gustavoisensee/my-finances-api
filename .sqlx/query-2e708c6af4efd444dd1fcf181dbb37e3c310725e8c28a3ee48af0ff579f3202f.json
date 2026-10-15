@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE \"Month\"\n        SET value = $3,\n            description = COALESCE($4, description),\n            \"yearId\" = COALESCE($5, \"yearId\")\n        WHERE id = $1 AND \"userId\" = $2\n        RETURNING id, value, description, \"createdAt\" AS created_at, \"yearId\" AS year_id, \"userId\" AS user_id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "year_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "user_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Int4",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "2e708c6af4efd444dd1fcf181dbb37e3c310725e8c28a3ee48af0ff579f3202f"
+}

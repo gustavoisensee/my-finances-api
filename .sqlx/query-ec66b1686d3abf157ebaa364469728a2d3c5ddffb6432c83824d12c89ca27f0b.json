@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT c.id, c.name, c.\"createdAt\" AS created_at, c.\"userId\" AS user_id,\n               (SELECT COUNT(*) FROM \"Expense\" e\n                  JOIN \"Budget\" b ON b.id = e.\"budgetId\"\n                  JOIN \"Month\" m ON m.id = b.\"monthId\"\n                 WHERE e.\"categoryId\" = c.id AND m.\"userId\" = $1) AS \"expense_count!\"\n        FROM \"Category\" c\n        WHERE c.\"userId\" = $1 OR c.\"userId\" IS NULL\n        ORDER BY c.id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 3,
+        "name": "user_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "expense_count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "ec66b1686d3abf157ebaa364469728a2d3c5ddffb6432c83824d12c89ca27f0b"
+}

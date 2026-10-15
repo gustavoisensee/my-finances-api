@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE \"User\" SET \"firebaseUid\" = $2\n        WHERE id = $1\n        RETURNING id, \"firebaseUid\" AS firebase_uid, \"clerkId\" AS clerk_id, \"createdAt\" AS created_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "firebase_uid",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "clerk_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "d1291a0c665a0b6bbc6e6f24ab1ec25602c144c088e13566f57d8a24f9522c59"
+}

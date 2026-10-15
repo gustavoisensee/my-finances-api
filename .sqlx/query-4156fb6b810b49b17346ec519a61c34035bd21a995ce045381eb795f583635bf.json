@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, description, value, color, index, \"createdAt\" AS created_at, \"monthId\" AS month_id\n            FROM \"Budget\" WHERE \"monthId\" = ANY($1)\n            ORDER BY index, id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "value",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "color",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "index",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 6,
+        "name": "month_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4156fb6b810b49b17346ec519a61c34035bd21a995ce045381eb795f583635bf"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE \"Budget\" b SET index = (t.ord - 1)::INT\n        FROM unnest($1::INT[]) WITH ORDINALITY AS t(id, ord)\n        WHERE b.id = t.id\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3af57fe0a0a85dcbf3a45c341fd34eadabb10031db42f151086eeee3199f8aa3"
+}

@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO \"Month\" (value, description, \"createdAt\", \"yearId\", \"userId\")\n        VALUES ($1, $2, $3, $4, $5)\n        RETURNING id, value, description, \"createdAt\" AS created_at, \"yearId\" AS year_id, \"userId\" AS user_id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "year_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "user_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Timestamp",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c18e1e4a4e568d139bfd2bd00f1bd55caa3c241dcd681a4faa52462ace83d46d"
+}

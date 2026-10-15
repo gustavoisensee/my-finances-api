@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT m.value, y.value AS year_value\n        FROM \"Month\" m JOIN \"Year\" y ON y.id = m.\"yearId\"\n        WHERE m.id = $1 AND m.\"userId\" = $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "year_value",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "9c5ac789ee78be09310e5bf394acfa8c2ad2f81d12f1f8dbdea4a2208e8543ed"
+}

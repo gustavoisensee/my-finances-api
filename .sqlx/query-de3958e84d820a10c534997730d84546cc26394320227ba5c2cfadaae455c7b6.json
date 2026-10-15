@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH existing AS (\n            SELECT id FROM \"User\" WHERE \"firebaseUid\" = $1\n        ), inserted AS (\n            INSERT INTO \"User\" (\"firebaseUid\", \"createdAt\")\n            SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM existing)\n            ON CONFLICT (\"firebaseUid\") DO NOTHING\n            RETURNING id\n        )\n        SELECT id AS \"id!\" FROM existing\n        UNION ALL\n        SELECT id AS \"id!\" FROM inserted\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "de3958e84d820a10c534997730d84546cc26394320227ba5c2cfadaae455c7b6"
+}

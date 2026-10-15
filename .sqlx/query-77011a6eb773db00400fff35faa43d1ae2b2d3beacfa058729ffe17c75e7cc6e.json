@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM \"Month\" WHERE \"userId\" = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "77011a6eb773db00400fff35faa43d1ae2b2d3beacfa058729ffe17c75e7cc6e"
+}

@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE \"Category\" c SET name = $2\n        WHERE c.id = $1\n        RETURNING c.id, c.name, c.\"createdAt\" AS created_at, c.\"userId\" AS user_id,\n                  (SELECT COUNT(*) FROM \"Expense\" e\n                     JOIN \"Budget\" b ON b.id = e.\"budgetId\"\n                     JOIN \"Month\" m ON m.id = b.\"monthId\"\n                    WHERE e.\"categoryId\" = c.id AND m.\"userId\" = $3) AS \"expense_count!\"\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 3,
+        "name": "user_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "expense_count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "f28e9ec51b265c212ab3366f97145d75f5f83e07e6018a7079626cd13a96830f"
+}

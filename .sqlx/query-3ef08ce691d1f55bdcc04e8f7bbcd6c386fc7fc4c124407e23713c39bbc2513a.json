@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM \"Month\"",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "3ef08ce691d1f55bdcc04e8f7bbcd6c386fc7fc4c124407e23713c39bbc2513a"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE \"Income\" i SET index = r.new_index\n        FROM (\n            SELECT id, (ROW_NUMBER() OVER (ORDER BY index, id) - 1)::INT AS new_index\n            FROM \"Income\" WHERE \"monthId\" = $1\n        ) r\n        WHERE i.id = r.id AND i.index <> r.new_index\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cb9f8768de2033aaf2b02dd1c7ae0769ecf41be1da70f50df165e80310c12584"
+}

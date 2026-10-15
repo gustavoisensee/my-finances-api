@@ -1,0 +1,54 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, value, description, \"createdAt\" AS created_at, \"yearId\" AS year_id, \"userId\" AS user_id\n        FROM \"Month\"\n        WHERE \"userId\" = $1 AND \"yearId\" = $2\n        ORDER BY id\n        LIMIT $3\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "year_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "user_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "552fb88c5436816d6c6a1e53f14debb93bfd1e7959bb6faf4c9d7283523cf7b8"
+}
